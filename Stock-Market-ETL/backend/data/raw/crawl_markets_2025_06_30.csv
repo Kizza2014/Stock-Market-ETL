@@ -1,0 +1,17 @@
+market_type,region,primary_exchanges,local_open,local_close,current_status,notes
+Equity,United States,"NASDAQ, NYSE, AMEX, BATS",09:30,16:15,closed,
+Equity,Canada,"Toronto, Toronto Ventures",09:30,16:00,closed,
+Equity,United Kingdom,London,08:00,16:30,open,
+Equity,Germany,"XETRA, Berlin, Frankfurt, Munich, Stuttgart",08:00,20:00,open,
+Equity,France,Paris,09:00,17:30,open,
+Equity,Spain,"Barcelona, Madrid",09:00,17:30,open,
+Equity,Portugal,Lisbon,08:00,16:30,open,
+Equity,Japan,Tokyo,09:00,15:00,closed,Noon trading break from 11:30 to 12:30 local time
+Equity,India,"NSE, BSE",09:15,15:30,closed,
+Equity,Mainland China,"Shanghai, Shenzhen",09:30,15:00,closed,Noon trading break from 11:30 to 13:00 local time
+Equity,Hong Kong,Hong Kong,09:30,16:00,closed,Noon trading break from 12:00 to 13:00 local time
+Equity,Brazil,Sao Paolo,10:00,17:30,closed,
+Equity,Mexico,Mexico,08:30,15:00,closed,
+Equity,South Africa,Johannesburg,09:00,17:00,open,
+Forex,Global,Global,00:00,23:59,open,"The forex market is open 24 hours a day, EXCEPT between 16:00 EST on Friday and 17:00 EST on Sunday"
+Cryptocurrency,Global,Global,00:00,23:59,open,The cryptocurrency market is open 24 hours a day
