@@ -6,7 +6,7 @@ from datetime import date
 
 
 load_dotenv()
-RAW_PATH = "E:\\Intern\\Stock-Market-ETL\\backend\\data\\raw\\"
+RAW_PATH = "./data/raw"
 URL = "https://www.alphavantage.co/query"
 API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 
@@ -22,7 +22,7 @@ def crawl_markets():
         # save data to csv
         df = pd.DataFrame(data=data)
         today_date = date.today().strftime("%Y_%m_%d")
-        filepath = RAW_PATH + f"crawl_markets_{today_date}.csv"
+        filepath = os.path.join(RAW_PATH, f"crawl_markets_{today_date}.csv")
         df.to_csv(filepath, index=False)
         print(f"Data saved to {filepath}")
     else:

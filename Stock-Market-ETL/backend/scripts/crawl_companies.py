@@ -7,7 +7,7 @@ import os
 
 load_dotenv()
 
-RAW_PATH = "E:\\Intern\\Stock-Market-ETL\\backend\\data\\raw\\"
+RAW_PATH = "./data/raw"
 EXCHANGES = ["NASY", "NASDAQ"]  # list of stock exchanges to extract data from
 URL = "https://api.sec-api.io/mapping/exchange/"  # sec api
 API_KEY = os.getenv("SEC_API_KEY") # api key for sec
@@ -31,7 +31,7 @@ def crawl_companies():
     # save crawled data to csv
     df = pd.DataFrame(data=companies_list)
     today_date = date.today().strftime("%Y_%m_%d")
-    filepath = RAW_PATH + f"crawl_companies_{today_date}.csv"
+    filepath = os.path.join(RAW_PATH, f"crawl_companies_{today_date}.csv")
     df.to_csv(filepath, index=False)
     print(f"Data saved to path: {filepath}")
 
