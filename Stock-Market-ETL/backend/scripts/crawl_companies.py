@@ -7,8 +7,8 @@ import os
 
 load_dotenv()
 
-RAW_PATH = "./data/raw"
-EXCHANGES = ["NASY", "NASDAQ"]  # list of stock exchanges to extract data from
+RAW_PATH = "../data/raw"
+EXCHANGES = ["NYSE", "NASDAQ", "BATS"]  # list of stock exchanges to extract data from
 URL = "https://api.sec-api.io/mapping/exchange/"  # sec api
 API_KEY = os.getenv("SEC_API_KEY") # api key for sec
 

@@ -6,7 +6,7 @@ from datetime import date
 
 
 load_dotenv()
-RAW_PATH = "./data/raw"
+RAW_PATH = "../data/raw"
 URL = "https://www.alphavantage.co/query"
 API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 
