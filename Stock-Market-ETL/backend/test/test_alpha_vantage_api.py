@@ -15,14 +15,14 @@ API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 def crawl_markets():
     # fetch data from api
     params = {
-        "function": "TIME_SERIES_DAILY", 
-        "symbol": "TSLA",
+        "function": "EARNINGS",
+        "symbol": "TSLA", 
         "apikey": API_KEY
     }
     response = requests.get(url=URL, params=params)
     if response.status_code == 200:
         data = response.json()
-        save_path = os.path.join(RAW_PATH, "time_series_daily_tesla.json")
+        save_path = os.path.join(RAW_PATH, "test_earnings.json")
         with open(save_path, 'w') as f:
             f.write(json.dumps(data))
         # # save data to csv
