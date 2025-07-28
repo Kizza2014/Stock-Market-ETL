@@ -67,7 +67,10 @@ if __name__ == "__main__":
 
     # BATS
 
-
-    symbols = []
+    # symbols xem trong file data/raw/crawl_companies_final.csv
+    # symbol lấy ở trường `ticker`, chỉ lấy các mã trên sàn `exchange` = NYSE, NASDAQ, BATS
+    # các mã được comment phía trên là đã lấy
+    # lấy xong thì lại push code lên để cập nhật tiến độ
+    symbols = []   # chỉ cần thêm tên các mã vào mảng rồi chạy, mỗi api key chỉ được 6 mã
     for symbol in symbols:
         crawl_fundamental_data(symbol)
