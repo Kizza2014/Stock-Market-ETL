@@ -7,9 +7,9 @@ import json
 
 
 load_dotenv()
-SAVE_PATH = "/home/zap/simulation_data/fundamental_data"
+SAVE_PATH = "./simulation_data/fundamental_data"
 URL = "https://www.alphavantage.co/query"
-API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY9")
+API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY2")
 
 def crawl_fundamental_data(symbol):
     # fetch data from api
@@ -71,6 +71,6 @@ if __name__ == "__main__":
     # symbol lấy ở trường `ticker`, chỉ lấy các mã trên sàn `exchange` = NYSE, NASDAQ, BATS
     # các mã được comment phía trên là đã lấy
     # lấy xong thì lại push code lên để cập nhật tiến độ
-    symbols = []   # chỉ cần thêm tên các mã vào mảng rồi chạy, mỗi api key chỉ được 6 mã
+    symbols = ["AL"]   # chỉ cần thêm tên các mã vào mảng rồi chạy, mỗi api key chỉ được 6 mã
     for symbol in symbols:
         crawl_fundamental_data(symbol)
