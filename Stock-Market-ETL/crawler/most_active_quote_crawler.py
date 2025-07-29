@@ -2,74 +2,73 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
+from datetime import date
 import os
 
 URL = "https://finance.yahoo.com/markets/stocks/most-active/"
 SAVE_PATH = "./sample_html/test_downloader/"
 
-class PageDownloader:
-    def __init__(self, url):
-        self.url = url
+class PageCrawler:
+    def __init__(self):
         self.driver = self.setup_driver()
-
-    def is_connected(self):
-        return self.driver.current_url is not None and self.driver.current_url != "data:"
 
     def setup_driver(self):
         options = Options()
-        options.add_argument('--start-maximized')
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_argument('--disable-extensions')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument("--start-maximized")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
         options.add_argument("--ignore-certificate-errors")
         options.add_argument("--ignore-ssl-errors")
         options.add_argument("--disable-web-security")
         options.add_argument("--allow-running-insecure-content")
-
         return webdriver.Chrome(options=options)
 
-    def download_page(self):
-        if not self.is_connected():
-            self.driver.get(self.url)
-            print(f"Crawling {self.driver.title}")
+    def crawl_tickers_from_idx(self, url, start=0, count=50):
+        # connect to the URL with pagination parameters
+        url_with_params = os.path.join(url, f"?start={start}&count={count}")
+        self.driver.get(url_with_params)
+        print(f"Crawling {self.driver.title} from index {start} with count {count}")
         html = self.driver.page_source
         return html
 
-    def download_all_pages(self):
-        self.driver.get(self.url)
-        print(f"Downloading all pages from {self.driver.title}")
-        # tải trang đầu tiên
-        page_number = 1
-        html = self.download_page()
-        self.save_html(html, os.path.join(SAVE_PATH, f"stocks_most_active_page{page_number}.html"))
-        page_number += 1
+    def crawl_all_tickers(self, url, count=25):
+        # connect to the URL
+        self.driver.get(url)
+        print(f"Crawling all tickers from {self.driver.title}")
 
-        # kiểm tra và tải các trang tiếp theo
-        while self.has_next_button() is not None:
-            next_button = self.get_next_button()
-            next_button.click()
-            print(f"Chuyển sang trang {page_number}")
-            html = self.download_page()
-            self.save_html(html, os.path.join(SAVE_PATH, f"stocks_most_active_page{page_number}.html"))
-            time.sleep(3)
-            page_number += 1
+        # create a directory to save the crawled HTML files
+        crawl_date = date.today().strftime("%Y_%m_%d")
+        crawl_path = os.path.join(SAVE_PATH, crawl_date)
+        if not os.path.exists(crawl_path):
+            os.makedirs(crawl_path)
+            print(f"Đã tạo thư mục lưu trữ: {crawl_path}")
 
-    def has_next_button(self):
+        # get the total number of most active tickers
+        total = self.get_total()
+        for i in range(0, total, count):
+            html = self.crawl_tickers_from_idx(url, start=i, count=count)
+            save_file = os.path.join(crawl_path, f"stocks_most_active_page{i // count + 1}.html")
+            self.save_html(html, save_file)
+            time.sleep(1) # Thêm thời gian chờ để tránh bị chặn
+
+    def get_total(self):
         try:
-            next_button = self.driver.find_element(By.CSS_SELECTOR, 'button[data-testid="next-page-button"]')
-            return next_button.is_displayed() and next_button.is_enabled()
-        except Exception as e:
-            print(f"Không tìm thấy nút Next: {e} -> Dừng tải.")
+            total_div = self.driver.find_element(By.CSS_SELECTOR, 'div.total.yf-1tdhqb1')
+            total_text = total_div.text
+            print(f"Total text: {total_text}")
+            # lấy số cuối cùng (ví dụ: "1-80 of 80" -> 80)
+            import re
+            match = re.search(r'of (\d+)', total_text)
+            if match:
+                total_number = int(match.group(1))
+                print(f"Tổng số: {total_number}")
+                return total_number
             return None
-        
-    def get_next_button(self):
-        try:
-            next_button = self.driver.find_element(By.CSS_SELECTOR, 'button[data-testid="next-page-button"]')
-            return next_button
         except Exception as e:
-            print(f"Không tìm thấy nút Next: {e} -> Dừng tải.")
+            print(f"Không tìm thấy tổng số: {e}")
             return None
 
     def save_html(self, html, save_path):
@@ -80,7 +79,7 @@ class PageDownloader:
     def quit(self):
         self.driver.quit()
 
-
 if __name__ == "__main__":
-    downloader = PageDownloader(URL)
-    downloader.download_all_pages()
+    crawler = PageCrawler()
+    crawler.crawl_all_tickers(URL)
+    crawler.quit()
