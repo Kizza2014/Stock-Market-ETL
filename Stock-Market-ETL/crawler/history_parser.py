@@ -37,10 +37,6 @@ class HistoryParser:
             self.save_to_csv(rows_data, schema, save_path)
 
     def parse_all_html(self, path):
-        # ngày hiện tại trùng với ngày crawl dữ liệu
-        parse_date = date.today().strftime("%Y_%m_%d")
-        path = os.path.join(SAVE_PATH, parse_date)
-
         # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
         if not os.path.exists(path):
             print(f"Thư mục {path} không tồn tại.")
@@ -76,6 +72,10 @@ class HistoryParser:
         print(f"Đã ghi dữ liệu ra file {save_path}")
     
 if __name__ == "__main__":
+    # ngày hiện tại trùng với ngày crawl dữ liệu
+    parse_date = date.today().strftime("%Y_%m_%d")
+    path = os.path.join(SAVE_PATH, parse_date)
+
     parser = HistoryParser()
-    parser.parse_all_html(SAVE_PATH)
+    parser.parse_all_html(path)
     print("Parsing completed.")
