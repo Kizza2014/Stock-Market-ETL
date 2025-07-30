@@ -6,9 +6,9 @@ from datetime import date
 import os
 
 URL = "https://finance.yahoo.com/markets/stocks/most-active/"
-SAVE_PATH = "./sample_html/test_downloader/"
+SAVE_PATH = "./sample_html/crawl_active_tickers/"
 
-class PageCrawler:
+class MostActiveQuoteCrawler:
     def __init__(self):
         self.driver = self.setup_driver()
 
@@ -24,6 +24,7 @@ class PageCrawler:
         options.add_argument("--ignore-ssl-errors")
         options.add_argument("--disable-web-security")
         options.add_argument("--allow-running-insecure-content")
+        options.add_argument('--headless=new')
         return webdriver.Chrome(options=options)
 
     def crawl_tickers_from_idx(self, url, start=0, count=50):
@@ -34,7 +35,7 @@ class PageCrawler:
         html = self.driver.page_source
         return html
 
-    def crawl_all_tickers(self, url, count=25):
+    def crawl_all_tickers(self, url, count=50):
         # connect to the URL
         self.driver.get(url)
         print(f"Crawling all tickers from {self.driver.title}")
@@ -80,6 +81,6 @@ class PageCrawler:
         self.driver.quit()
 
 if __name__ == "__main__":
-    crawler = PageCrawler()
+    crawler = MostActiveQuoteCrawler()
     crawler.crawl_all_tickers(URL)
     crawler.quit()

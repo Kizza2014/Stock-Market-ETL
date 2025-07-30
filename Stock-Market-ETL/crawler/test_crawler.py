@@ -9,7 +9,7 @@ options.add_argument('--disable-blink-features=AutomationControlled')
 options.add_argument('--disable-extensions')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--headless=new')
+# options.add_argument('--headless=new')
 
 driver = webdriver.Chrome(options=options)
 driver.get("https://finance.yahoo.com/quote/NVDA/analysis/") 

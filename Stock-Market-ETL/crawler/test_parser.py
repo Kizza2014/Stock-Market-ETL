@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 
 # Đọc file HTML
-with open('./sample_html/test_downloader/stocks_most_active_page5.html', 'r', encoding='utf-8') as f:
+with open('./sample_html/crawl_5_years_history/2025_07_30/NVDA_history_2025_07_30.html', 'r', encoding='utf-8') as f:
     html = f.read()
 
 soup = BeautifulSoup(html, 'html.parser')
