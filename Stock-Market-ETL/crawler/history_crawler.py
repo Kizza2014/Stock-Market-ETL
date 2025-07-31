@@ -136,7 +136,7 @@ class HistoryParser:
 if __name__ == "__main__":
     # đường dẫn dùng để lưu raw html và parsed csv
     crawl_date = date.today().strftime("%Y_%m_%d")
-    path = os.path.join(SAVE_PATH, f"crawl_at_{crawl_date}")
+    path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
     if not os.path.exists(path):
         os.makedirs(path)
         print(f"Đã tạo thư mục lưu trữ: {path}")
