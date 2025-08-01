@@ -5,11 +5,11 @@ import time
 from datetime import date
 import os
 from bs4 import BeautifulSoup
-import csv
+from crawl_utils import save_html, save_to_csv
 
 
 URL = "https://finance.yahoo.com/markets/stocks/most-active/"
-SAVE_PATH = "./sample_html/crawl_active_tickers/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
+SAVE_PATH = "./raw_data/crawl_active_tickers/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
 
 
 class MostActiveQuoteCrawler:
@@ -49,8 +49,8 @@ class MostActiveQuoteCrawler:
         for i in range(0, total, count):
             html = self.crawl_tickers_from_idx(url, start=i, count=count)
             save_file = os.path.join(save_path, f"stocks_most_active_page{i // count + 1}.html")
-            self.save_html(html, save_file)
-            time.sleep(1) # Thêm thời gian chờ để tránh bị chặn
+            save_html(html, save_file)
+            time.sleep(2) # Thêm thời gian chờ để tránh bị chặn
 
     def get_total(self):
         try:
@@ -68,11 +68,6 @@ class MostActiveQuoteCrawler:
         except Exception as e:
             print(f"Không tìm thấy tổng số: {e}")
             return None
-
-    def save_html(self, html, save_path):
-        with open(save_path, "w", encoding="utf-8") as f:
-            f.write(html)
-        print(f"Đã lưu toàn bộ HTML vào {save_path}")
 
     def quit(self):
         self.driver.quit()
@@ -134,21 +129,8 @@ class MostActiveQuoteParser:
                     print(f"Cảnh báo: Schema không khớp trong file {file}")
                 rows_data.extend(parsed_data)
         
-        if save_path:
-            self.save_to_csv(rows_data, schema, save_path)
+        save_to_csv(rows_data, schema, save_path)
         print(f"Đã xử lí {len(rows_data)} dòng dữ liệu với schema: {schema}")
-    
-    def save_to_csv(self, rows_data, schema, save_path):
-        if not rows_data or not schema:
-            print("Không có dữ liệu để ghi ra file CSV.")
-            return
-        
-        with open(save_path, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(schema)
-            for row in rows_data:
-                writer.writerow(row)
-        print(f"Đã ghi dữ liệu ra file {save_path}")
 
 
 if __name__ == "__main__":
