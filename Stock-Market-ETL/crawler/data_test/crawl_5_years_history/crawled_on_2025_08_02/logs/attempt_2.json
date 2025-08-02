@@ -1,0 +1,21 @@
+{
+    "parse_date": "2025-08-02",
+    "total_tickers": 12,
+    "tickers": {
+        "CCJ": "succeeded",
+        "AG": "succeeded",
+        "GAP": "succeeded",
+        "GLW": "succeeded",
+        "PK": "succeeded",
+        "AMCR": "succeeded",
+        "HST": "succeeded",
+        "GNW": "succeeded",
+        "SATS": "succeeded",
+        "FSM": "succeeded",
+        "QCOM": "succeeded",
+        "VLY": "succeeded"
+    },
+    "total_succeeded": 12,
+    "total_failed": 0,
+    "need_to_crawl_again": []
+}

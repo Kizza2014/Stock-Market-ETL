@@ -5,10 +5,12 @@ from datetime import date
 import os
 from crawl_utils import save_html, save_to_csv, state_code_look_up
 from bs4 import BeautifulSoup
+import pandas as pd
 
 
 BASE_URL = "https://finance.yahoo.com/quote/"
-SAVE_PATH = "./sample_data/crawl_profile/"
+SAVE_PATH = "./data_test/crawl_profile/"
+MOST_ACTIVE_QUOTES_PATH = "./data_test/crawl_active_tickers/most_active_quotes_parsed.csv"  # đường dẫn đến file chứa các mã đã crawl
 
 
 class ProfileCrawler:
@@ -132,22 +134,34 @@ class ProfileParser:
         save_to_csv(rows_data, schema, save_path)
 
 if __name__ == "__main__":
+    print("\n\n================== PROFILE CRAWLING  ==================\n")
+    
     # đường dẫn lưu rawl html và parsed csv
     crawl_date = date.today().strftime("%Y_%m_%d")
+    print(f"Crawling date: {crawl_date}")
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
+    print(f"Path to save crawled data: {path}")
     if not os.path.exists(path):
         os.makedirs(path)
         print(f"Đã tạo thư mục lưu trữ: {path}")
 
     # crawl dữ liệu
-    tickers = ["NVDA"] # cần thay bằng danh sách active ticker đã crawl được 
+    most_active_quotes_path = f"./data_test/crawl_active_tickers/crawled_on_{crawl_date}/most_active_quotes_parsed.csv"  
+    active_quotes_df = pd.read_csv(most_active_quotes_path)
+    tickers = active_quotes_df['symbol'].unique().tolist()
     crawler = ProfileCrawler()
     for ticker in tickers:
+        print(f"\nTicker: {ticker}")
         crawler.crawl_profile(ticker, path)
-    print("Crawling completed.")
+    print("\nCrawling completed.")
     crawler.quit()
+
+    # trong thực tế, chỉ thực hiện crawl 1 lần cho những mã chưa xuất hiện trong database, các mã đã có chỉ crawl daily
+    # -> cần thêm logic xử lí sau này
 
     # parse dữ liệu
     parser = ProfileParser()
     parser.parse_all_html(path)
-    print("Parsing completed.")
+    print("\nParsing completed.")
+
+    print("\n\n================== PROFILE CRAWLING COMPLETED  ==================\n")

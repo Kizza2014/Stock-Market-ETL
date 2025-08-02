@@ -9,7 +9,7 @@ from crawl_utils import save_html, save_to_csv
 
 
 URL = "https://finance.yahoo.com/markets/stocks/most-active/"
-SAVE_PATH = "./sample_data/crawl_active_tickers/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
+SAVE_PATH = "./test/crawl_active_tickers/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
 
 
 class MostActiveQuoteCrawler:
@@ -35,7 +35,7 @@ class MostActiveQuoteCrawler:
         # connect to the URL with pagination parameters
         url_with_params = os.path.join(url, f"?start={start}&count={count}")
         self.driver.get(url_with_params)
-        print(f"Crawling {self.driver.title} from index {start} with count {count}")
+        print(f"\nCrawling {self.driver.title} from index {start} with count {count}")
         html = self.driver.page_source
         return html
 
@@ -117,7 +117,7 @@ class MostActiveQuoteParser:
         schema = None
         for file in files:
             if file.endswith('.html'):
-                print(f"Parsing file: {file}")
+                print(f"\nParsing file: {file}")
                 with open(os.path.join(path, file), 'r', encoding='utf-8') as f:
                     html = f.read()
                 parsed_data, parsed_schema = self.parse_html(html)
@@ -134,9 +134,13 @@ class MostActiveQuoteParser:
 
 
 if __name__ == "__main__":
+    print("\n\n================== MOST ACTIVE QUOTES CRAWLING ==================\n")
+
     # đường dẫn lưu rawl html và parsed csv
     crawl_date = date.today().strftime("%Y_%m_%d")
+    print(f"Crawling date: {crawl_date}")
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
+    print(f"Path to save crawled data: {path}")
     if not os.path.exists(path):
         os.makedirs(path)
         print(f"Đã tạo thư mục lưu trữ: {path}")
@@ -144,10 +148,12 @@ if __name__ == "__main__":
     # crawl dữ liệu
     crawler = MostActiveQuoteCrawler()
     crawler.crawl_all_tickers(URL, save_path=path)
-    print("Crawling completed.")
+    print("\nCrawling completed.")
     crawler.quit()
     
     # parse dữ liệu và lưu vào csv
     parser = MostActiveQuoteParser()
     parser.parse_all_html(path=path)
-    print("Parsing completed.")
+    print("\nParsing completed.")
+
+    print("\n\n================== MOST ACTIVE QUOTES CRAWLING COMPLETED ==================\n")
