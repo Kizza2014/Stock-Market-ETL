@@ -12,7 +12,7 @@ from crawl_utils import save_html, save_to_csv
 
 
 BASE_URL = "https://finance.yahoo.com/quote/"
-SAVE_PATH = "./raw_data/crawl_5_years_history/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
+SAVE_PATH = "./sample_data/crawl_5_years_history/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
 
 
 class HistoryCrawler:

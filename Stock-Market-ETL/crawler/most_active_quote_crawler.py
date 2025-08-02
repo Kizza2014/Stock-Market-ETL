@@ -9,7 +9,7 @@ from crawl_utils import save_html, save_to_csv
 
 
 URL = "https://finance.yahoo.com/markets/stocks/most-active/"
-SAVE_PATH = "./raw_data/crawl_active_tickers/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
+SAVE_PATH = "./sample_data/crawl_active_tickers/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
 
 
 class MostActiveQuoteCrawler:

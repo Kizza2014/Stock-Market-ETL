@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 
 BASE_URL = "https://finance.yahoo.com/quote/"
-SAVE_PATH = "./sample_html/crawl_profile/"
+SAVE_PATH = "./sample_data/crawl_profile/"
 
 
 class ProfileCrawler:
