@@ -7,4 +7,5 @@ CRM-demo/.env
 Stock-Market-ETL/crawler/data_test/crawl_5_years_history/crawled_on_2025_08_02/*.csv
 Stock-Market-ETL/crawler/data_test/crawl_5_years_history/crawled_on_2025_08_02/*.html
 Stock-Market-ETL/crawler/data_test/crawl_profile/crawled_on_2025_08_02/*.html
+Stock-Market-ETL/crawler/data_test/crawl_profile/crawled_on_2025_08_02/*.csv
 Stock-Market-ETL/crawler/data_test/crawl_active_tickers/crawled_on_2025_08_02/*

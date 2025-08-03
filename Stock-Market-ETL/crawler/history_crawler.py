@@ -210,9 +210,10 @@ if __name__ == "__main__":
         parse_results = parser.parse_all_html(path=path, tickers=tickers)
 
         # ghi lại logs
-        with open(os.path.join(logs_path, f"attempt_{attempt}.json"), 'w') as f:
-            f.write(json.dumps(parse_results, indent=4))
-        print(f"\nĐã lưu kết quả parse vào file: {os.path.join(logs_path, f'attempt_{attempt}.json')}")
+        log_file_path = os.path.join(logs_path, f"attempt_{attempt}.json")
+        with open(log_file_path, 'w') as f:
+            f.write(json.dumps(parse_results, indent=4, ensure_ascii=False))
+        print(f"\nĐã lưu log vào file: {log_file_path}")
 
         print("\nParsing completed.")
 
