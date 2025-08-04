@@ -131,8 +131,7 @@ if __name__ == "__main__":
     print("\n\n================== STATISTICS CRAWLING ==================\n")
 
     # đường dẫn lưu rawl html và parsed csv
-    # crawl_date = date.today().strftime("%Y_%m_%d")
-    crawl_date = "2025_08_02"  # for testing purposes
+    crawl_date = date.today().strftime("%Y_%m_%d")
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
     if not os.path.exists(path):
         os.makedirs(path)

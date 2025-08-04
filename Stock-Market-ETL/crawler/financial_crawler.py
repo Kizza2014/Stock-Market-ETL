@@ -7,6 +7,9 @@ from crawl_utils import save_html, save_to_csv
 from bs4 import BeautifulSoup
 import json
 import pandas as pd
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 BASE_URL = "https://finance.yahoo.com/quote/"
@@ -33,6 +36,18 @@ class FinancialCrawler:
         options.add_argument('--headless=new')
         return webdriver.Chrome(options=options)
 
+    def show_quarterly_data(self, wait_time=20):
+        try:
+            # Đợi nút quarterly xuất hiện rồi mới click
+            quarterly_btn = WebDriverWait(self.driver, wait_time).until(
+                EC.element_to_be_clickable((By.ID, "tab-quarterly"))
+            )
+            quarterly_btn.click()
+            print("Đã bấm nút Quarterly.")
+            time.sleep(2)  # đợi dữ liệu quarterly load lại
+        except Exception as e:
+            print(f"Error clicking Quarterly button: {str(e)}")
+
     def crawl_financials(self, ticker, save_path, wait_time=5):
         try:
             # crawl income statement
@@ -42,10 +57,7 @@ class FinancialCrawler:
             time.sleep(wait_time)  # đợi trang load xong
             
             ## show quarterly data
-            quarterly_btn = self.driver.find_element("id", "tab-quarterly")
-            quarterly_btn.click()
-            print("Đã bấm nút Quarterly.")
-            time.sleep(2)  # đợi dữ liệu quarterly load lại
+            self.show_quarterly_data()
 
             html = self.driver.page_source
             html_path = os.path.join(save_path, "income_statement", f"{ticker.upper()}_income_statement.html")
@@ -61,10 +73,7 @@ class FinancialCrawler:
             time.sleep(wait_time)  # đợi trang load xong
 
             ## show quarterly data
-            quarterly_btn = self.driver.find_element("id", "tab-quarterly")
-            quarterly_btn.click()
-            print("Đã bấm nút Quarterly.")
-            time.sleep(2)  # đợi dữ liệu quarterly load lại
+            self.show_quarterly_data()
 
             html = self.driver.page_source
             html_path = os.path.join(save_path, "balance_sheet", f"{ticker.upper()}_balance_sheet.html")
@@ -80,10 +89,7 @@ class FinancialCrawler:
             time.sleep(wait_time)  # đợi trang load xong
 
             ## show quarterly data
-            quarterly_btn = self.driver.find_element("id", "tab-quarterly")
-            quarterly_btn.click()
-            print("Đã bấm nút Quarterly.")
-            time.sleep(2)  # đợi dữ liệu quarterly load lại
+            self.show_quarterly_data()
 
             html = self.driver.page_source
             html_path = os.path.join(save_path, "cash_flow", f"{ticker.upper()}_cash_flow.html")
@@ -200,11 +206,9 @@ if __name__ == "__main__":
     print("\n\n================== FINANCIALS CRAWLING ==================\n")
 
     # đường dẫn lưu rawl html và parsed csv
-    # crawl_date = date.today().strftime("%Y_%m_%d")
-    crawl_date = "2025_08_02"
+    crawl_date = date.today().strftime("%Y_%m_%d")
     print(f"Crawling date: {crawl_date}")
-    # path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
-    path = os.path.join(SAVE_PATH, "crawled_on_2025_08_02")
+    path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
     print(f"Path to save crawled data: {path}")
     # tạo thư mục lưu từng loại dữ liệu
     if not os.path.exists(path):
@@ -218,41 +222,41 @@ if __name__ == "__main__":
         print(f"Đã tạo thư mục logs: {logs_path}")
     
     for _ in range(MAX_ATTEMPT):
-        # # tìm file logs mới nhất, nếu không có thì crawl lại từ đầu
-        # log_files = [f for f in os.listdir(logs_path) if f.endswith('.json')]
-        # log_files.sort(reverse=True)  # sắp xếp theo thứ tự giảm dần
-        # if log_files:
-        #     latest_log_file = log_files[0]
-        #     log_file_name = os.path.splitext(latest_log_file)[0]
-        #     attempt = int(log_file_name.split("_")[-1]) + 1  # thứ tự của lần crawl
-        #     print(f"\nĐang sử dụng lại file logs: {latest_log_file} (attempt {attempt})")
-        #     # đọc nội dung file logs
-        #     with open(os.path.join(logs_path, latest_log_file), 'r') as f:
-        #         logs = json.load(f)
-        #     tickers = logs.get("need_to_crawl_again", [])
-        #     if not tickers:
-        #         print("\nKhông có mã nào cần crawl lại, kết thúc quá trình.")
-        #         break  # nếu không có mã nào cần crawl lại thì kết thúc vòng lặp
-        # else:
-        #     print("\nKhông tìm thấy file logs, crawl toàn bộ mã")
-        #     attempt = 1  # nếu chưa có file logs nào thì đây là lần crawl đầu tiên
-        #     most_active_quotes_path = f"./data_test/crawl_active_tickers/crawled_on_{crawl_date}/most_active_quotes_parsed.csv"  
-        #     active_quotes_df = pd.read_csv(most_active_quotes_path)
-        #     tickers = active_quotes_df['symbol'].unique().tolist()
+        # tìm file logs mới nhất, nếu không có thì crawl lại từ đầu
+        log_files = [f for f in os.listdir(logs_path) if f.endswith('.json')]
+        log_files.sort(reverse=True)  # sắp xếp theo thứ tự giảm dần
+        if log_files:
+            latest_log_file = log_files[0]
+            log_file_name = os.path.splitext(latest_log_file)[0]
+            attempt = int(log_file_name.split("_")[-1]) + 1  # thứ tự của lần crawl
+            print(f"\nĐang sử dụng lại file logs: {latest_log_file} (attempt {attempt})")
+            # đọc nội dung file logs
+            with open(os.path.join(logs_path, latest_log_file), 'r') as f:
+                logs = json.load(f)
+            tickers = logs.get("need_to_crawl_again", [])
+            if not tickers:
+                print("\nKhông có mã nào cần crawl lại, kết thúc quá trình.")
+                break  # nếu không có mã nào cần crawl lại thì kết thúc vòng lặp
+        else:
+            print("\nKhông tìm thấy file logs, crawl toàn bộ mã")
+            attempt = 1  # nếu chưa có file logs nào thì đây là lần crawl đầu tiên
+            most_active_quotes_path = f"./data_test/crawl_active_tickers/crawled_on_{crawl_date}/most_active_quotes_parsed.csv"  
+            active_quotes_df = pd.read_csv(most_active_quotes_path)
+            tickers = active_quotes_df['symbol'].unique().tolist()
 
             # trong thực tế, chỉ thực hiện crawl 1 lần cho những mã chưa xuất hiện trong database, các mã đã có chỉ crawl daily
             # -> cần thêm logic xử lí sau này
 
-        # # crawl dữ liệu
-        # # tickers = ["BTI", "HMY", "DHR"]
-        # crawler = FinancialCrawler()
-        # for ticker in tickers:
-        #     print(f"\nTicker {ticker}:")
-        #     crawler.crawl_financials(ticker, path)
-        # print("\nCrawling completed.")
-        # crawler.quit()
 
-        attempt = 1
+        print(f"\nAttempt {attempt} - Tickers to crawl: {len(tickers)}")
+        # crawl dữ liệu
+        crawler = FinancialCrawler()
+        for ticker in tickers:
+            print(f"\nTicker {ticker}:")
+            crawler.crawl_financials(ticker, path)
+        print("\nCrawling completed.")
+        crawler.quit()
+
         # parse dữ liệu
         parser = FinancialParser()
         income_statement_results, balance_sheet_results, cash_flow_results = parser.parse_all_html(path)
@@ -266,7 +270,6 @@ if __name__ == "__main__":
         with open(os.path.join(logs_path, f"cash_flow_attempt_{attempt}.json"), 'w') as f:
             f.write(json.dumps(cash_flow_results, indent=4))
         print(f"\nLogs saved for attempt {attempt}.")
-        break
 
 
     print("\n\n================== FINANCIALS CRAWLING COMPLETED  ==================\n")

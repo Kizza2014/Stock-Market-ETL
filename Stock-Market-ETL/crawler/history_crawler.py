@@ -55,10 +55,10 @@ class HistoryCrawler:
         html_path = os.path.join(save_path, f"{ticker.upper()}_history.html")
         save_html(html, html_path)
 
-    def show_5_years_histories(self):
+    def show_5_years_histories(self, wait_time=20):
         try:
             # click vào tuỳ chọn thời gian
-            wait = WebDriverWait(self.driver, 20)
+            wait = WebDriverWait(self.driver, wait_time)
             button1 = wait.until(
                 EC.element_to_be_clickable(
                     (By.CSS_SELECTOR, "button.tertiary-btn.menuBtn.yf-1epmntv")
@@ -68,7 +68,7 @@ class HistoryCrawler:
             print("Đã click vào nút chọn khoảng thời gian!")
 
             # chọn dữ liệu 5 năm gần nhất
-            wait = WebDriverWait(self.driver, 20)
+            wait = WebDriverWait(self.driver, wait_time)
             button2 = wait.until(
                 EC.element_to_be_clickable(
                     (By.CSS_SELECTOR, "button.tertiary-btn.tw-w-full.tw-justify-center.yf-1epmntv[value='5_Y']")

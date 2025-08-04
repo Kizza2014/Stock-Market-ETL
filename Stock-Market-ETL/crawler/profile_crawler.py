@@ -74,7 +74,9 @@ class ProfileParser:
             "parse_date": date.today().strftime("%Y-%m-%d"),
             "total_tickers": len(available_html),
             "tickers": {},
-            "need_to_crawl_again": []
+            "need_to_crawl_again": [],
+            "total_succeeded": 0,
+            "total_failed": 0
         }
 
         for html_file in available_html:
@@ -117,7 +119,7 @@ class ProfileParser:
                     if address_tag:
                         address_parts = [div.text.strip() for div in address_tag.find_all('div')]
                         ## country
-                        country = address_parts[2] if len(address_parts) > 2 else ""
+                        country = address_parts[-1] if len(address_parts) > 2 else ""
                         ## thêm 1 trường full address nếu cần
                         full_address = ', '.join(address_parts)
 
@@ -138,12 +140,12 @@ class ProfileParser:
                     # in thông báo
                     print(f"Status: succeeded")
                     parse_results["tickers"][ticker] = "succeeded"
-                    parse_results["total_succeeded"] = parse_results.get("total_succeeded", 0) + 1
+                    parse_results["total_succeeded"] += 1
                 except Exception as e:
                     print(f"Status: failed")
                     parse_results["tickers"][ticker] = "failed"
-                    parse_results["total_failed"] = parse_results.get("total_failed", 0) + 1
-                    parse_results["need_to_crawl_again"].append(ticker) # thêm ticker vào danh sách cần crawl lại
+                    parse_results["total_failed"] += 1
+                    parse_results["need_to_crawl_again"].append(ticker)  # thêm ticker vào danh sách cần crawl lại
                     continue
 
         # lưu dữ liệu vào file CSV
@@ -193,9 +195,8 @@ if __name__ == "__main__":
             active_quotes_df = pd.read_csv(most_active_quotes_path)
             tickers = active_quotes_df['symbol'].unique().tolist()
 
-
         ####### BẮT ĐẦU ########
-        print(f"Attempt {attempt} - Tickers to crawl: {len(tickers)}")
+        print(f"\nAttempt {attempt} - Tickers to crawl: {len(tickers)}")
 
         # crawl dữ liệu
         crawler = ProfileCrawler()
@@ -211,13 +212,12 @@ if __name__ == "__main__":
         # parse dữ liệu
         parser = ProfileParser()
         parse_results = parser.parse_all_html(path)
+        print("\nParsing completed.")
 
         # ghi lại log
         log_file_path = os.path.join(logs_path, f"attempt_{attempt}.json")
         with open(log_file_path, 'w') as f:
             f.write(json.dumps(parse_results, indent=4, ensure_ascii=False))
         print(f"\nĐã lưu log vào file: {log_file_path}")
-
-        print("\nParsing completed.")
 
     print("\n\n================== PROFILE CRAWLING COMPLETED  ==================\n")
