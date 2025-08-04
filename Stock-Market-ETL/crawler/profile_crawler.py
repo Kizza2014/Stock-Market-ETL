@@ -62,7 +62,7 @@ class ProfileParser:
         # chỉ định các thông tin cần lấy từ html
         schema = [
             "company_name", "company_ticker", "exchange_name", "sector", "industry", "phone", "website",
-            "street_address", "city", "state", "zip_code", "country", "full_address", "description"
+            "full_address", "country", "description"
         ]
 
         # lấy danh sách các file HTML trong thư mục
@@ -135,11 +135,14 @@ class ProfileParser:
                         full_address, country, description
                     ])
 
+                    # in thông báo
                     print(f"Status: succeeded")
                     parse_results["tickers"][ticker] = "succeeded"
+                    parse_results["total_succeeded"] = parse_results.get("total_succeeded", 0) + 1
                 except Exception as e:
                     print(f"Status: failed")
                     parse_results["tickers"][ticker] = "failed"
+                    parse_results["total_failed"] = parse_results.get("total_failed", 0) + 1
                     parse_results["need_to_crawl_again"].append(ticker) # thêm ticker vào danh sách cần crawl lại
                     continue
 
@@ -153,11 +156,9 @@ if __name__ == "__main__":
     print("\n\n================== PROFILE CRAWLING  ==================\n")
     
     # đường dẫn lưu rawl html và parsed csv
-    # crawl_date = date.today().strftime("%Y_%m_%d")
-    crawl_date = "2025_08_02"  # tạm thời sử dụng ngày cũ để tránh lỗi
+    crawl_date = date.today().strftime("%Y_%m_%d")
     print(f"Crawling date: {crawl_date}")
-    # path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
-    path = os.path.join(SAVE_PATH, "crawled_on_2025_08_02")  # tạm thời sử dụng ngày cũ để tránh
+    path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
     print(f"Path to save crawled data: {path}")
     if not os.path.exists(path):
         os.makedirs(path)
@@ -196,13 +197,13 @@ if __name__ == "__main__":
         ####### BẮT ĐẦU ########
         print(f"Attempt {attempt} - Tickers to crawl: {len(tickers)}")
 
-        # # crawl dữ liệu
-        # crawler = ProfileCrawler()
-        # for ticker in tickers:
-        #     print(f"\nTicker: {ticker}")
-        #     crawler.crawl_profile(ticker, path)
-        # print("\nCrawling completed.")
-        # crawler.quit()
+        # crawl dữ liệu
+        crawler = ProfileCrawler()
+        for ticker in tickers:
+            print(f"\nTicker: {ticker}")
+            crawler.crawl_profile(ticker, path)
+        print("\nCrawling completed.")
+        crawler.quit()
 
         # trong thực tế, chỉ thực hiện crawl 1 lần cho những mã chưa xuất hiện trong database, các mã đã có chỉ crawl daily
         # -> cần thêm logic xử lí sau này
@@ -218,6 +219,5 @@ if __name__ == "__main__":
         print(f"\nĐã lưu log vào file: {log_file_path}")
 
         print("\nParsing completed.")
-        break
 
     print("\n\n================== PROFILE CRAWLING COMPLETED  ==================\n")

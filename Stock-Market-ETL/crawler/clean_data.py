@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from datetime import date
 
+ACTIVE_QUOTE_PATH = "./data_test/crawl_active_tickers/"
 
 def clean_active_quote(path):
     # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
@@ -116,7 +117,6 @@ def clean_profile(path):
     
     # đọc file csv và xử lý
     df = pd.read_csv(csv_file)
-    print(df.dtypes)
 
     # lưu dữ liệu đã xử lý
     cleaned_csv_path = os.path.join(path, f"all_profiles_cleaned.csv")
@@ -368,45 +368,45 @@ def clean_statistics(path):
 
 
 if __name__ == "__main__":
-    # # đường dẫn dùng để lưu rawl html và parsed csv
-    # crawl_date = "2025_07_31"
+    # # # đường dẫn dùng để lưu rawl html và parsed csv
+    # crawl_date = "2025_08_02"
     # path = os.path.join(ACTIVE_QUOTE_PATH, f"crawled_on_{crawl_date}")
     # clean_active_quote(path)
     # print("Cleaning completed.")
 
     # # Đường dẫn đến thư mục chứa dữ liệu 5 năm
-    # crawl_date = "2025_07_30"
-    # five_years_history_path = os.path.join("./sample_data/crawl_5_years_history/", f"crawled_on_{crawl_date}")
+    # crawl_date = "2025_08_02"
+    # five_years_history_path = os.path.join("./data_test/crawl_5_years_history/", f"crawled_on_{crawl_date}")
     # clean_5_years_history(five_years_history_path)
     # print("5 years history cleaning completed.")
 
     # # Đường dẫn đến thư mục chứa dữ liệu báo cáo thu nhập
-    # crawl_date = "2025_08_01"
-    # income_statement_path = f"./sample_data/crawl_financials/crawled_on_{crawl_date}/income_statement"
+    # crawl_date = "2025_08_02"
+    # income_statement_path = f"./data_test/crawl_financials/crawled_on_{crawl_date}/income_statement"
     # clean_income_statement(income_statement_path)
     # print("Income statement cleaning completed.")
 
     # # Đường dẫn đến thư mục chứa dữ liệu báo cáo bảng cân đối kế toán
-    # crawl_date = "2025_08_01"
-    # balance_sheet_path = f"./sample_data/crawl_financials/crawled_on_{crawl_date}/balance_sheet"
+    # crawl_date = "2025_08_02"
+    # balance_sheet_path = f"./data_test/crawl_financials/crawled_on_{crawl_date}/balance_sheet"
     # clean_balance_sheet(balance_sheet_path)
     # print("Balance sheet cleaning completed.")
 
     # # Đường dẫn đến thư mục chứa dữ liệu báo cáo lưu chuyển tiền tệ
-    # crawl_date = "2025_08_01"
-    # cash_flow_path = f"./sample_data/crawl_financials/crawled_on_{crawl_date}/cash_flow"
+    # crawl_date = "2025_08_02"
+    # cash_flow_path = f"./data_test/crawl_financials/crawled_on_{crawl_date}/cash_flow"
     # clean_cash_flow(cash_flow_path)
     # print("Cash flow cleaning completed.")
 
     # # Đường dẫn đến thư mục chứa dữ liệu thống kê
-    # crawl_date = "2025_08_01"
-    # statistics_path = f"./sample_data/crawl_statistics/crawled_on_{crawl_date}"
+    # crawl_date = "2025_08_02"
+    # statistics_path = f"./data_test/crawl_statistics/crawled_on_{crawl_date}"
     # clean_statistics(statistics_path)
     # print("Statistics cleaning completed.")
 
     # Đường dẫn đến thư mục chứa dữ liệu hồ sơ công ty
-    crawl_date = "2025_07_31"
-    profile_path = f"./sample_data/crawl_profile/crawled_on_{crawl_date}"
+    crawl_date = "2025_08_02"
+    profile_path = f"./data_test/crawl_profile/crawled_on_{crawl_date}"
     clean_profile(profile_path)
     print("Profile cleaning completed.")
 

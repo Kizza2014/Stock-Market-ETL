@@ -1,5 +1,5 @@
 {
-    "parse_date": "2025-08-03",
+    "parse_date": "2025-08-04",
     "total_tickers": 349,
     "tickers": {
         "SHOP": "succeeded",
@@ -352,5 +352,6 @@
         "BEN": "succeeded",
         "WDC": "succeeded"
     },
-    "need_to_crawl_again": []
+    "need_to_crawl_again": [],
+    "total_succeeded": 349
 }
