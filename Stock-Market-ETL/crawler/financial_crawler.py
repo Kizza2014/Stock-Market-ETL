@@ -1,15 +1,14 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 import time
 from datetime import date
 import os
-from crawl_utils import save_html, save_to_csv
+from crawl_utils import save_html, save_to_csv, create_folder_if_not_exists, check_valid_folder
 from bs4 import BeautifulSoup
 import json
 import pandas as pd
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from base_crawler import BaseCrawler
 
 
 BASE_URL = "https://finance.yahoo.com/quote/"
@@ -17,24 +16,9 @@ SAVE_PATH = "./data_test/crawl_financials/"
 MAX_ATTEMPT = 5
 
 
-class FinancialCrawler:
+class FinancialCrawler(BaseCrawler):
     def __init__(self):
-        self.driver = self.setup_driver()
-
-    def setup_driver(self):
-        options = Options()
-        options.add_argument("--start-maximized")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--ignore-ssl-errors")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
-        options.add_argument('--headless=new')
-        return webdriver.Chrome(options=options)
+        super().__init__()
 
     def show_quarterly_data(self, wait_time=20):
         try:
@@ -61,9 +45,7 @@ class FinancialCrawler:
 
             html = self.driver.page_source
             html_path = os.path.join(save_path, "income_statement", f"{ticker.upper()}_income_statement.html")
-            if not os.path.exists(os.path.dirname(html_path)):
-                os.makedirs(os.path.dirname(html_path))
-                print(f"Đã tạo thư mục lưu trữ: {os.path.dirname(html_path)}")
+            create_folder_if_not_exists(os.path.dirname(html_path))  # tạo thư mục nếu chưa có
             save_html(html, html_path)
 
             # crawl balance sheet
@@ -77,9 +59,7 @@ class FinancialCrawler:
 
             html = self.driver.page_source
             html_path = os.path.join(save_path, "balance_sheet", f"{ticker.upper()}_balance_sheet.html")
-            if not os.path.exists(os.path.dirname(html_path)):
-                os.makedirs(os.path.dirname(html_path))
-                print(f"Đã tạo thư mục lưu trữ: {os.path.dirname(html_path)}")
+            create_folder_if_not_exists(os.path.dirname(html_path))  # tạo thư mục nếu chưa có
             save_html(html, html_path)
 
             # crawl cash flow
@@ -93,12 +73,10 @@ class FinancialCrawler:
 
             html = self.driver.page_source
             html_path = os.path.join(save_path, "cash_flow", f"{ticker.upper()}_cash_flow.html")
-            if not os.path.exists(os.path.dirname(html_path)):
-                os.makedirs(os.path.dirname(html_path))
-                print(f"Đã tạo thư mục lưu trữ: {os.path.dirname(html_path)}")
+            create_folder_if_not_exists(os.path.dirname(html_path))  # tạo thư mục nếu chưa có
             save_html(html, html_path)
         except Exception as e:
-            print(f"Error: no financials data found for {ticker}. - {str(e)}")
+            print(f"Error: no financials data found for {ticker}")
 
     def quit(self):
         self.driver.quit()
@@ -106,13 +84,7 @@ class FinancialCrawler:
 
 class FinancialParser:
     def parse_all_html(self, path):
-        # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
-        if not os.path.exists(path):
-            print(f"Thư mục {path} không tồn tại")
-            exit(1)
-        if not os.listdir(path):
-            print(f"Thư mục {path} không chứa file HTML nào.")
-            exit(1)
+        check_valid_folder(path)
 
         # parse income statement
         income_statement_path = os.path.join(path, "income_statement")
@@ -202,6 +174,7 @@ class FinancialParser:
         transposed = list(map(list, zip(*rows_data)))
         return transposed
 
+
 if __name__ == "__main__":
     print("\n\n================== FINANCIALS CRAWLING ==================\n")
 
@@ -211,16 +184,13 @@ if __name__ == "__main__":
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
     print(f"Path to save crawled data: {path}")
     # tạo thư mục lưu từng loại dữ liệu
-    if not os.path.exists(path):
-        os.makedirs(path)
-        print(f"Đã tạo thư mục lưu trữ: {path}")
+    create_folder_if_not_exists(path)
 
     # đường dẫn lưu logs
     logs_path = os.path.join(path, "logs")
-    if not os.path.exists(logs_path):
-        os.makedirs(logs_path)
-        print(f"Đã tạo thư mục logs: {logs_path}")
-    
+    create_folder_if_not_exists(logs_path)
+
+    # bắt đầu crawl với số lần retry tối đa
     for _ in range(MAX_ATTEMPT):
         # tìm file logs mới nhất, nếu không có thì crawl lại từ đầu
         log_files = [f for f in os.listdir(logs_path) if f.endswith('.json')]

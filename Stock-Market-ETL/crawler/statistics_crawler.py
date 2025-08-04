@@ -1,12 +1,11 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 import time
 from datetime import date
 import os
-from crawl_utils import save_html, save_to_csv
+from crawl_utils import save_html, save_to_csv, check_valid_folder, create_folder_if_not_exists
 from bs4 import BeautifulSoup
 import json
 import pandas as pd
+from base_crawler import BaseCrawler
 
 
 BASE_URL = "https://finance.yahoo.com/quote/"
@@ -14,24 +13,9 @@ SAVE_PATH = "./data_test/crawl_statistics/"
 MAX_ATTEMPT = 5
 
 
-class FinancialCrawler:
+class FinancialCrawler(BaseCrawler):
     def __init__(self):
-        self.driver = self.setup_driver()
-
-    def setup_driver(self):
-        options = Options()
-        options.add_argument("--start-maximized")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--ignore-ssl-errors")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
-        options.add_argument('--headless=new')
-        return webdriver.Chrome(options=options)
+        super().__init__()
 
     def crawl_statistics(self, ticker, save_path, wait_time=5):
         # crawl key statistics
@@ -50,13 +34,7 @@ class FinancialCrawler:
 
 class FinancialParser:
     def parse_all_html(self, path):
-        # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
-        if not os.path.exists(path):
-            print(f"Thư mục {path} không tồn tại")
-            exit(1)
-        if not os.listdir(path):
-            print(f"Thư mục {path} không chứa file HTML nào.")
-            exit(1)
+        check_valid_folder(path)
 
         avalable_html = [file for file in os.listdir(path) if file.endswith('.html')]
         parse_results = {
@@ -133,15 +111,11 @@ if __name__ == "__main__":
     # đường dẫn lưu rawl html và parsed csv
     crawl_date = date.today().strftime("%Y_%m_%d")
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
-    if not os.path.exists(path):
-        os.makedirs(path)
-        print(f"Đã tạo thư mục lưu trữ: {path}")
+    create_folder_if_not_exists(path)
 
     # đường dẫn lưu logs
     logs_path = os.path.join(path, "logs")
-    if not os.path.exists(logs_path):
-        os.makedirs(logs_path)
-        print(f"Đã tạo thư mục lưu trữ logs: {logs_path}")
+    create_folder_if_not_exists(logs_path)
 
     for _ in range(MAX_ATTEMPT):
         # tìm file logs mới nhất, nếu không có thì crawl lại từ đầu

@@ -3,10 +3,11 @@ from selenium.webdriver.chrome.options import Options
 import time
 from datetime import date
 import os
-from crawl_utils import save_html, save_to_csv, state_code_look_up
+from crawl_utils import save_html, save_to_csv, check_valid_folder, create_folder_if_not_exists
 from bs4 import BeautifulSoup
 import pandas as pd
 import json
+from base_crawler import BaseCrawler
 
 
 BASE_URL = "https://finance.yahoo.com/quote/"
@@ -15,24 +16,9 @@ MOST_ACTIVE_QUOTES_PATH = "./data_test/crawl_active_tickers/most_active_quotes_p
 MAX_ATTEMPT = 5  # số lần thử tối đa khi crawl dữ liệu
 
 
-class ProfileCrawler:
+class ProfileCrawler(BaseCrawler):
     def __init__(self):
-        self.driver = self.setup_driver()
-
-    def setup_driver(self):
-        options = Options()
-        options.add_argument("--start-maximized")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--ignore-ssl-errors")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
-        options.add_argument('--headless=new')
-        return webdriver.Chrome(options=options)
+        super().__init__()
 
     def crawl_profile(self, ticker, save_path, wait_time=5):
         url = os.path.join(BASE_URL, ticker, "profile")
@@ -51,13 +37,7 @@ class ProfileCrawler:
 
 class ProfileParser:
     def parse_all_html(self, path):
-        # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
-        if not os.path.exists(path):
-            print(f"Thư mục {path} không tồn tại")
-            exit(1)
-        if not os.listdir(path):
-            print(f"Thư mục {path} không chứa file HTML nào.")
-            exit(1)
+        check_valid_folder(path)
 
         # chỉ định các thông tin cần lấy từ html
         schema = [
@@ -162,15 +142,11 @@ if __name__ == "__main__":
     print(f"Crawling date: {crawl_date}")
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
     print(f"Path to save crawled data: {path}")
-    if not os.path.exists(path):
-        os.makedirs(path)
-        print(f"Đã tạo thư mục lưu trữ: {path}")
+    create_folder_if_not_exists(path)
 
     # đường dẫn lưu logs
     logs_path = os.path.join(path, "logs")
-    if not os.path.exists(logs_path):
-        os.makedirs(logs_path)
-        print(f"Đã tạo thư mục logs: {logs_path}")
+    create_folder_if_not_exists(logs_path)
 
     for _ in range(MAX_ATTEMPT):
         # tìm file log mới nhất, nếu không thì crawl lại từ đầu
@@ -195,7 +171,7 @@ if __name__ == "__main__":
             active_quotes_df = pd.read_csv(most_active_quotes_path)
             tickers = active_quotes_df['symbol'].unique().tolist()
 
-        ####### BẮT ĐẦU ########
+
         print(f"\nAttempt {attempt} - Tickers to crawl: {len(tickers)}")
 
         # crawl dữ liệu

@@ -1,35 +1,19 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 import time
 from datetime import date
 import os
 from bs4 import BeautifulSoup
-from crawl_utils import save_html, save_to_csv
+from crawl_utils import save_html, save_to_csv, check_valid_folder, create_folder_if_not_exists
+from base_crawler import BaseCrawler
 
 
 URL = "https://finance.yahoo.com/markets/stocks/most-active/"
 SAVE_PATH = "./test/crawl_active_tickers/" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
 
 
-class MostActiveQuoteCrawler:
+class MostActiveQuoteCrawler(BaseCrawler):
     def __init__(self):
-        self.driver = self.setup_driver()
-
-    def setup_driver(self):
-        options = Options()
-        options.add_argument("--start-maximized")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--ignore-ssl-errors")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
-        options.add_argument('--headless=new')
-        return webdriver.Chrome(options=options)
+        super().__init__()
 
     def crawl_tickers_from_idx(self, url, start=0, count=50):
         # connect to the URL with pagination parameters
@@ -141,9 +125,7 @@ if __name__ == "__main__":
     print(f"Crawling date: {crawl_date}")
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
     print(f"Path to save crawled data: {path}")
-    if not os.path.exists(path):
-        os.makedirs(path)
-        print(f"Đã tạo thư mục lưu trữ: {path}")
+    create_folder_if_not_exists(path)
 
     # crawl dữ liệu
     crawler = MostActiveQuoteCrawler()

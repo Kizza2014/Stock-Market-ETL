@@ -1,6 +1,4 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 import time
 from datetime import date
 import os
@@ -8,9 +6,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-from crawl_utils import save_html, save_to_csv
+from crawl_utils import save_html, save_to_csv, create_folder_if_not_exists, check_valid_folder
 import pandas as pd
 import json
+from base_crawler import BaseCrawler
 
 
 BASE_URL = "https://finance.yahoo.com/quote/"
@@ -18,24 +17,9 @@ SAVE_PATH = "./data_test/crawl_5_years_history/" # lưu trữ trên local, sau n
 MAX_ATTEMP = 5  # số lần thử tối đa khi crawl dữ liệu lịch sử
 
 
-class HistoryCrawler:
+class HistoryCrawler(BaseCrawler):
     def __init__(self):
-        self.driver = self.setup_driver()
-
-    def setup_driver(self):
-        options = Options()
-        options.add_argument("--start-maximized")
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--ignore-ssl-errors")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
-        options.add_argument('--headless=new')
-        return webdriver.Chrome(options=options)
+        super().__init__()
 
     def crawl_all_daily_histories(self, ticker, save_path, wait_time=20):
         url = os.path.join(BASE_URL, ticker, "history")
@@ -115,38 +99,33 @@ class HistoryParser:
 
 
     def parse_all_html(self, path, tickers):
-        # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
-        if not os.path.exists(path):
-            print(f"Thư mục {path} không tồn tại.")
-            exit(1)
-        if not os.listdir(path):
-            print(f"Thư mục {path} không chứa file HTML nào.")
-            exit(1)
+        check_valid_folder(path)
 
         # parse html cho từng mã và lưu vào file csv
         available_html = [file for file in os.listdir(path) if file.endswith('.html') and file.split('_')[0] in tickers]
         parse_results = {
             "parse_date": date.today().strftime("%Y-%m-%d"),
+            "data_type": "history",
             "total_tickers": len(available_html),
             "tickers": {}
         }
         for html_file in available_html:
             # lấy ticker từ tên file
-            ticker = html_file.split('_')[0]
+            ticker = html_file.split('_')[0].upper()
 
             # kết quả được lưu cùng đường dẫn với file HTML
-            save_path = os.path.join(path, f"{ticker.upper()}_history_parsed.csv")
-            
+            save_path = os.path.join(path, f"{ticker}_history_parsed.csv")
+
             print(f"\nParsing file: {html_file}")
             html_path = os.path.join(path, html_file)
             parse_status = self.parse_html(html_path, save_path)
             print(f"Status: {'succeeded' if parse_status else 'failed'}")
-            parse_results["tickers"][html_file.split("_")[0]] = "succeeded" if parse_status else "failed"
+            parse_results["tickers"][ticker] = "succeeded" if parse_status else "failed"
         print(f"\nĐã xử lý xong {len(available_html)} file HTML.")
 
         parse_results["total_succeeded"] = sum(1 for status in parse_results["tickers"].values() if status == "succeeded")
         parse_results["total_failed"] = sum(1 for status in parse_results["tickers"].values() if status == "failed")
-        parse_results["need_to_crawl_again"] = [file.split("_")[0] for file, status in parse_results["tickers"].items() if status == "failed"]
+        parse_results["need_to_crawl_again"] = [ticker for ticker, status in parse_results["tickers"].items() if status == "failed"]
         return parse_results
 
 
@@ -158,15 +137,11 @@ if __name__ == "__main__":
     print(f"Crawling date: {crawl_date}")
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
     print(f"Path to save crawled data: {path}")
-    if not os.path.exists(path):
-        os.makedirs(path)
-        print(f"Đã tạo thư mục lưu trữ: {path}")
+    create_folder_if_not_exists(path)
 
     # đường dẫn lưu logs
     logs_path = os.path.join(path, "logs")
-    if not os.path.exists(logs_path):
-        os.makedirs(logs_path)
-        print(f"Đã tạo thư mục logs: {logs_path}")
+    create_folder_if_not_exists(logs_path)
 
     # crawl dữ liệu lịch sử 5 năm cho toàn bộ các active quotes đã được crawl
     for _ in range(MAX_ATTEMP):

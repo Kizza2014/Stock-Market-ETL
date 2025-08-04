@@ -1,5 +1,21 @@
 import csv
+import os
 
+
+def check_valid_folder(path):
+    # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
+    if not os.path.exists(path):
+        print(f"Thư mục {path} không tồn tại")
+        exit(1)
+    if not os.listdir(path):
+        print(f"Thư mục {path} không chứa file nào")
+        exit(1)
+
+def create_folder_if_not_exists(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print(f"Đã tạo thư mục: {path}")
+    
 def save_html(html, save_path):
     with open(save_path, "w", encoding="utf-8") as f:
         f.write(html)
