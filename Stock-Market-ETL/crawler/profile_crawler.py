@@ -1,5 +1,3 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 import time
 from datetime import date
 import os
@@ -184,7 +182,7 @@ if __name__ == "__main__":
 
         # trong thực tế, chỉ thực hiện crawl 1 lần cho những mã chưa xuất hiện trong database, các mã đã có chỉ crawl daily
         # -> cần thêm logic xử lí sau này
-
+        
         # parse dữ liệu
         parser = ProfileParser()
         parse_results = parser.parse_all_html(path)
