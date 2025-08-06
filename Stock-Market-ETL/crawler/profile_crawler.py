@@ -189,7 +189,7 @@ if __name__ == "__main__":
         parser = ProfileParser()
         parse_results = parser.parse_all_html(path)
         print("\nParsing completed.")
-
+        
         # ghi lại log
         log_file_path = os.path.join(logs_path, f"attempt_{attempt}.json")
         with open(log_file_path, 'w') as f:

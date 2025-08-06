@@ -178,7 +178,7 @@ class FinancialParser:
 if __name__ == "__main__":
     print("\n\n================== FINANCIALS CRAWLING ==================\n")
 
-    # đường dẫn lưu rawl html và parsed csv
+    # đường dẫn lưu raw html và parsed csv
     crawl_date = date.today().strftime("%Y_%m_%d")
     print(f"Crawling date: {crawl_date}")
     path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
