@@ -398,15 +398,16 @@ if __name__ == "__main__":
     # clean_cash_flow(cash_flow_path)
     # print("Cash flow cleaning completed.")
 
-    # Đường dẫn đến thư mục chứa dữ liệu thống kê
-    crawl_date = "2025_08_02"
-    statistics_path = f"./data_test/crawl_statistics/crawled_on_{crawl_date}"
-    clean_statistics(statistics_path)
-    print("Statistics cleaning completed.")
+    # # Đường dẫn đến thư mục chứa dữ liệu thống kê
+    # crawl_date = "2025_08_02"
+    # statistics_path = f"./data_test/crawl_statistics/crawled_on_{crawl_date}"
+    # clean_statistics(statistics_path)
+    # print("Statistics cleaning completed.")
 
     # # Đường dẫn đến thư mục chứa dữ liệu hồ sơ công ty
     # crawl_date = "2025_08_02"
     # profile_path = f"./data_test/crawl_profile/crawled_on_{crawl_date}"
     # clean_profile(profile_path)
     # print("Profile cleaning completed.")
+    pass
 

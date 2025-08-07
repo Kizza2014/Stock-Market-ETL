@@ -17,5 +17,5 @@ Stock-Market-ETL/crawler/data_test/crawl_financials/crawled_on_2025_08_02/cash_f
 Stock-Market-ETL/crawler/data_test/crawl_financials/crawled_on_2025_08_02/cash_flow/*.csv
 Stock-Market-ETL/crawler/data_test/crawl_statistics/crawled_on_2025_08_02/*.csv
 Stock-Market-ETL/crawler/data_test/crawl_statistics/crawled_on_2025_08_02/*.html
-
+Stock-Market-ETL/storage/__pycache__/*
 
