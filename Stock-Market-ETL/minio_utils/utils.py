@@ -1,4 +1,5 @@
 import os
+import io
 from dotenv import load_dotenv
 from minio import Minio
 
@@ -34,6 +35,19 @@ def upload_file_to_minio(client, bucket_name, file_path, object_name):
     ensure_bucket_exists(client, bucket_name)
     client.fput_object(bucket_name, object_name, file_path)
     print(f"File '{file_path}' uploaded to bucket '{bucket_name}' as '{object_name}'.")
+
+def upload_html_content_to_minio(client, bucket_name, html_content, object_name):
+    """Upload HTML content (string) directly to MinIO without saving to disk."""
+    ensure_bucket_exists(client, bucket_name)
+    data = html_content.encode("utf-8")
+    client.put_object(
+        bucket_name,
+        object_name,
+        io.BytesIO(data),   # serialize trước khi upload vào minio, do minio chỉ hỗ trợ stream hoặc file
+        length=len(data),
+        content_type="text/html"
+    )
+    print(f"HTML content uploaded to bucket '{bucket_name}' as '{object_name}'.")
 
 def download_file_from_minio(client, bucket_name, object_name, file_path):
     """Download a file from the specified MinIO bucket."""

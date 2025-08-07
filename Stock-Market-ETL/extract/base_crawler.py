@@ -20,4 +20,7 @@ class BaseCrawler:
         options.add_argument("--allow-running-insecure-content")
         options.add_argument('--headless=new')
         return webdriver.Chrome(options=options)
+    
+    def quit(self):
+        self.driver.quit()
 
