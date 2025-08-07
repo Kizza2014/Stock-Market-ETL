@@ -324,10 +324,10 @@ def clean_statistics(path):
     merged_df.drop(columns=['breakdown'], inplace=True)
 
     ## các cột số
-    df["market_cap_value"] = df["Market Cap"].str.extract(r'([\d\.]+)').astype(float)
-    df["market_cap_unit"] = df["Market Cap"].str.extract(r'([A-Za-z]+)')
-    df["enterprise_value"] = df["Enterprise Value"].str.extract(r'([\d\.]+)').astype(float)
-    df["enterprise_value_unit"] = df["Enterprise Value"].str.extract(r'([A-Za-z]+)')
+    merged_df["market_cap_value"] = merged_df["Market Cap"].str.extract(r'([\d\.]+)').astype(float)
+    merged_df["market_cap_unit"] = merged_df["Market Cap"].str.extract(r'([A-Za-z]+)')
+    merged_df["enterprise_value"] = merged_df["Enterprise Value"].str.extract(r'([\d\.]+)').astype(float)
+    merged_df["enterprise_value_unit"] = merged_df["Enterprise Value"].str.extract(r'([A-Za-z]+)')
     ## thêm hệ số scale tương ứng với đơn vị đo
     scale_factors = {
         "USD": 1,  # không có đơn vị
@@ -336,8 +336,8 @@ def clean_statistics(path):
         "B": 1e9,
         "T": 1e12
     }
-    df["market_cap_value_scale_factor"] = df["market_cap_unit"].map(scale_factors).fillna(1)
-    df["enterprise_value_scale_factor"] = df["enterprise_value_unit"].map(scale_factors).fillna(1)
+    merged_df["market_cap_value_scale_factor"] = merged_df["market_cap_unit"].map(scale_factors).fillna(1)
+    merged_df["enterprise_value_scale_factor"] = merged_df["enterprise_value_unit"].map(scale_factors).fillna(1)
 
     # bỏ môt số cột không cần thiết
     cols_to_drop = ['Market Cap', 'Enterprise Value']
@@ -398,15 +398,15 @@ if __name__ == "__main__":
     # clean_cash_flow(cash_flow_path)
     # print("Cash flow cleaning completed.")
 
-    # # Đường dẫn đến thư mục chứa dữ liệu thống kê
-    # crawl_date = "2025_08_02"
-    # statistics_path = f"./data_test/crawl_statistics/crawled_on_{crawl_date}"
-    # clean_statistics(statistics_path)
-    # print("Statistics cleaning completed.")
-
-    # Đường dẫn đến thư mục chứa dữ liệu hồ sơ công ty
+    # Đường dẫn đến thư mục chứa dữ liệu thống kê
     crawl_date = "2025_08_02"
-    profile_path = f"./data_test/crawl_profile/crawled_on_{crawl_date}"
-    clean_profile(profile_path)
-    print("Profile cleaning completed.")
+    statistics_path = f"./data_test/crawl_statistics/crawled_on_{crawl_date}"
+    clean_statistics(statistics_path)
+    print("Statistics cleaning completed.")
+
+    # # Đường dẫn đến thư mục chứa dữ liệu hồ sơ công ty
+    # crawl_date = "2025_08_02"
+    # profile_path = f"./data_test/crawl_profile/crawled_on_{crawl_date}"
+    # clean_profile(profile_path)
+    # print("Profile cleaning completed.")
 
