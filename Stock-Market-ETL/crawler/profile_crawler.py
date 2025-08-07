@@ -18,15 +18,18 @@ class ProfileCrawler(BaseCrawler):
     def __init__(self):
         super().__init__()
 
-    def crawl_profile(self, ticker, save_path, wait_time=5):
-        url = os.path.join(BASE_URL, ticker, "profile")
-        self.driver.get(url)
-        print(f"Crawling company profile from {self.driver.title}")
+    def crawl_profile(self, tickers, save_path, wait_time=5):
+        tickers = [ticker.upper() for ticker in tickers]  # đảm bảo ticker là chữ hoa
+        for ticker in tickers:
+            print(f"\nTicker {ticker}:")
+            url = os.path.join(BASE_URL, ticker, "profile")
+            self.driver.get(url)
+            print(f"Crawling company profile from {self.driver.title}")
 
         # lấy toàn bộ HTML sau khi đã render và lưu lại
         time.sleep(wait_time)  # đợi trang load xong
         html = self.driver.page_source
-        html_path = os.path.join(save_path, f"{ticker.upper()}_profile.html")
+        html_path = os.path.join(save_path, f"{ticker}_profile.html")
         save_html(html, html_path)
 
     def quit(self):
@@ -35,6 +38,7 @@ class ProfileCrawler(BaseCrawler):
 
 class ProfileParser:
     def parse_all_html(self, path):
+        # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
         check_valid_folder(path)
 
         # chỉ định các thông tin cần lấy từ html
@@ -174,9 +178,7 @@ if __name__ == "__main__":
 
         # crawl dữ liệu
         crawler = ProfileCrawler()
-        for ticker in tickers:
-            print(f"\nTicker: {ticker}")
-            crawler.crawl_profile(ticker, path)
+        crawler.crawl_profile(tickers, path)
         print("\nCrawling completed.")
         crawler.quit()
 

@@ -17,16 +17,19 @@ class FinancialCrawler(BaseCrawler):
     def __init__(self):
         super().__init__()
 
-    def crawl_statistics(self, ticker, save_path, wait_time=5):
-        # crawl key statistics
-        url = os.path.join(BASE_URL, ticker, "key-statistics")
-        self.driver.get(url)
-        print(f"Crawling key statistics from {self.driver.title}")
-        time.sleep(wait_time)  # đợi trang load xong
-        
-        html = self.driver.page_source
-        html_path = os.path.join(save_path, f"{ticker.upper()}_key_statistics.html")
-        save_html(html, html_path)
+    def crawl_statistics(self, tickers, save_path, wait_time=5):
+        tickers = [ticker.upper() for ticker in tickers]  # chuyển tất cả mã thành chữ hoa
+        for ticker in tickers:
+            # crawl key statistics
+            print(f"\nTicker {ticker}:")
+            url = os.path.join(BASE_URL, ticker, "key-statistics")
+            self.driver.get(url)
+            print(f"Crawling key statistics from {self.driver.title}")
+            time.sleep(wait_time)  # đợi trang load xong
+            
+            html = self.driver.page_source
+            html_path = os.path.join(save_path, f"{ticker}_key_statistics.html")
+            save_html(html, html_path)
 
     def quit(self):
         self.driver.quit()
@@ -146,9 +149,7 @@ if __name__ == "__main__":
         print(f"Attempt {attempt} - Tickers to crawl: {len(tickers)}")
         # crawl dữ liệu
         crawler = FinancialCrawler()
-        for ticker in tickers:
-            print(f"\nTicker {ticker.upper()}:")
-            crawler.crawl_statistics(ticker, path)
+        crawler.crawl_statistics(tickers, path)
         print("Crawling completed.")
         crawler.quit()
 

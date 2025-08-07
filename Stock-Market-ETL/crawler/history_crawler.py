@@ -2,7 +2,6 @@ from selenium.webdriver.common.by import By
 import time
 from datetime import date
 import os
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
@@ -21,23 +20,30 @@ class HistoryCrawler(BaseCrawler):
     def __init__(self):
         super().__init__()
 
-    def crawl_all_daily_histories(self, ticker, save_path, wait_time=20):
-        url = os.path.join(BASE_URL, ticker, "history")
-        self.driver.get(url)
-        print(f"Crawling all daily histories from {self.driver.title}")
+    def crawl_all_daily_histories(self, tickers, save_path, wait_time=20):
+        tickers = [ticker.upper() for ticker in tickers]  # đảm bảo ticker là chữ hoa
+        for ticker in tickers:
+            print(f"\nTicker {ticker}:")
+            try:
+                url = os.path.join(BASE_URL, ticker, "history")
+                self.driver.get(url)
+                print(f"Crawling all daily histories of {ticker} from {self.driver.title}")
 
-        # chuyển đến phần xem dữ liệu 5 năm gần nhất
-        self.show_5_years_histories()
+                # chuyển đến phần xem dữ liệu 5 năm gần nhất
+                self.show_5_years_histories()
 
-        # đợi render đầy đủ bảng lịch sử
-        time.sleep(wait_time)
+                # đợi render đầy đủ bảng lịch sử
+                time.sleep(wait_time)
 
-        # lấy toàn bộ HTML sau khi đã render
-        html = self.driver.page_source
+                # lấy toàn bộ HTML sau khi đã render
+                html = self.driver.page_source
 
-        # lưu lại html
-        html_path = os.path.join(save_path, f"{ticker.upper()}_history.html")
-        save_html(html, html_path)
+                # lưu lại html
+                html_path = os.path.join(save_path, f"{ticker}_history.html")
+                save_html(html, html_path)
+            except Exception as e:
+                print(f"Error while crawling {ticker}: {e}")
+                continue
 
     def show_5_years_histories(self, wait_time=20):
         try:
@@ -101,18 +107,16 @@ class HistoryParser:
     def parse_all_html(self, path, tickers):
         check_valid_folder(path)
 
+        tickers = [ticker.upper() for ticker in tickers]  # đảm bảo ticker là chữ hoa
+        available_html = {ticker: file for file in os.listdir(path) if file.endswith('.html') and file.split('_')[0] in tickers}
         # parse html cho từng mã và lưu vào file csv
-        available_html = [file for file in os.listdir(path) if file.endswith('.html') and file.split('_')[0] in tickers]
         parse_results = {
             "parse_date": date.today().strftime("%Y-%m-%d"),
             "data_type": "history",
             "total_tickers": len(available_html),
             "tickers": {}
         }
-        for html_file in available_html:
-            # lấy ticker từ tên file
-            ticker = html_file.split('_')[0].upper()
-
+        for ticker, html_file in available_html.items():
             # kết quả được lưu cùng đường dẫn với file HTML
             save_path = os.path.join(path, f"{ticker}_history_parsed.csv")
 
@@ -173,9 +177,9 @@ if __name__ == "__main__":
             # -> cần thêm logic xử lí sau này
 
         print(f"\nAttempt {attempt} - Tổng số mã cần crawl: {len(tickers)}")
-        for ticker in tickers:
-            print(f"\nTicker: {ticker}")
-            crawler.crawl_all_daily_histories(ticker, path)
+        
+        # bắt đầu crawl dữ liệu lịch sử
+        crawler.crawl_all_daily_histories(tickers, path)
         print("\nCrawling completed.")
         crawler.quit()
 

@@ -1,6 +1,5 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from crawl_utils import save_html, save_to_csv
 
 
 class BaseCrawler:

@@ -86,13 +86,7 @@ class MostActiveQuoteParser:
 
     def parse_all_html(self, path):
         # kiểm tra xem dữ liệu ngày đó đã được crawl chưa
-        if not os.path.exists(path):
-            print(f"Thư mục {path} không tồn tại.")
-            exit(1)
-        if not os.listdir(path):
-            print(f"Thư mục {path} không chứa file HTML nào.")
-            exit(1)
-
+        check_valid_folder(path)
         # kết quả được lưu cùng đường dẫn với html
         save_path = os.path.join(path, "most_active_quotes_parsed.csv")
 

@@ -32,51 +32,36 @@ class FinancialCrawler(BaseCrawler):
         except Exception as e:
             print(f"Error clicking Quarterly button: {str(e)}")
 
-    def crawl_financials(self, ticker, save_path, wait_time=5):
-        try:
-            # crawl income statement
-            income_statement_url = os.path.join(BASE_URL, ticker, "financials")
-            self.driver.get(income_statement_url)
-            print(f"\nCrawling income statement from {self.driver.title}")
-            time.sleep(wait_time)  # đợi trang load xong
-            
-            ## show quarterly data
-            self.show_quarterly_data()
+    def crawl_financials(self, tickers, save_path, wait_time=5):
+        # endpoints cho từng loại dữ liệu 
+        # eg: https://finance.yahoo.com/quote/AAPL/financials : dữ liệu income statement
+        #     https://finance.yahoo.com/quote/AAPL/balance-sheet : dữ liệu balance sheet
+        #     https://finance.yahoo.com/quote/AAPL/cash-flow : dữ liệu cash flow
+        data_type_endpoints ={
+            "income_statement": "financials",
+            "balance_sheet": "balance-sheet",
+            "cash_flow": "cash-flow"
+        }
+        tickers = [ticker.upper() for ticker in tickers]  # chuyển tất cả mã thành chữ hoa
+        for ticker in tickers:
+            print(f"\nTicker {ticker}:")
+            try:
+                for data_type, endpoint in data_type_endpoints.items():
+                    # crawl loại dữ liệu tương ứng
+                    url = os.path.join(BASE_URL, ticker, endpoint)
+                    self.driver.get(url)
+                    print(f"\nCrawling {data_type} from {self.driver.title}")
+                    time.sleep(wait_time)  # đợi trang load xong
+                    
+                    ## bấm vào nút "Quarterly" để hiển thị dữ liệu theo từng quý
+                    self.show_quarterly_data()
 
-            html = self.driver.page_source
-            html_path = os.path.join(save_path, "income_statement", f"{ticker.upper()}_income_statement.html")
-            create_folder_if_not_exists(os.path.dirname(html_path))  # tạo thư mục nếu chưa có
-            save_html(html, html_path)
-
-            # crawl balance sheet
-            balance_sheet_url = os.path.join(BASE_URL, ticker, "balance-sheet")
-            self.driver.get(balance_sheet_url)
-            print(f"\nCrawling balance sheet from {self.driver.title}")
-            time.sleep(wait_time)  # đợi trang load xong
-
-            ## show quarterly data
-            self.show_quarterly_data()
-
-            html = self.driver.page_source
-            html_path = os.path.join(save_path, "balance_sheet", f"{ticker.upper()}_balance_sheet.html")
-            create_folder_if_not_exists(os.path.dirname(html_path))  # tạo thư mục nếu chưa có
-            save_html(html, html_path)
-
-            # crawl cash flow
-            cash_flow_url = os.path.join(BASE_URL, ticker, "cash-flow")
-            self.driver.get(cash_flow_url)
-            print(f"\nCrawling cash flow from {self.driver.title}")
-            time.sleep(wait_time)  # đợi trang load xong
-
-            ## show quarterly data
-            self.show_quarterly_data()
-
-            html = self.driver.page_source
-            html_path = os.path.join(save_path, "cash_flow", f"{ticker.upper()}_cash_flow.html")
-            create_folder_if_not_exists(os.path.dirname(html_path))  # tạo thư mục nếu chưa có
-            save_html(html, html_path)
-        except Exception as e:
-            print(f"Error: no financials data found for {ticker}")
+                    html = self.driver.page_source
+                    html_path = os.path.join(save_path, data_type, f"{ticker}_{data_type}.html")
+                    create_folder_if_not_exists(os.path.dirname(html_path))  # tạo thư mục nếu chưa có
+                    save_html(html, html_path)
+            except Exception as e:
+                print(f"Error: no financials data found for {ticker}")
 
     def quit(self):
         self.driver.quit()
@@ -86,19 +71,15 @@ class FinancialParser:
     def parse_all_html(self, path):
         check_valid_folder(path)
 
-        # parse income statement
-        income_statement_path = os.path.join(path, "income_statement")
-        income_statement_results = self.parse_transposed_table(income_statement_path, data_type="income_statement")
+        data_types = ["income_statement", "balance_sheet", "cash_flow"]
+        parse_results = {}
+        for data_type in data_types:
+            # parse dữ liệu cho từng loại tương ứng
+            data_type_path = os.path.join(path, data_type)
+            data_type_results = self.parse_transposed_table(data_type_path, data_type=data_type)
+            parse_results[data_type] = data_type_results
 
-        # parse balance sheet
-        balance_sheet_path = os.path.join(path, "balance_sheet")
-        balance_sheet_results = self.parse_transposed_table(balance_sheet_path, data_type="balance_sheet")
-
-        # parse cash flow
-        cash_flow_path = os.path.join(path, "cash_flow")
-        cash_flow_results = self.parse_transposed_table(cash_flow_path, data_type="cash_flow")
-
-        return income_statement_results, balance_sheet_results, cash_flow_results
+        return parse_results
 
     def parse_transposed_table(self, html_path, data_type):
         available_html = [file for file in os.listdir(html_path) if file.endswith('.html')]
@@ -110,8 +91,8 @@ class FinancialParser:
             "need_to_crawl_again": []
         }
         for html_file in available_html:
-            ticker = html_file.split('_')[0]
-            save_path = os.path.join(html_path, f"{ticker.upper()}_{data_type}_parsed.csv")
+            ticker = html_file.split('_')[0].upper() # lấy mã chứng khoán từ tên file
+            save_path = os.path.join(html_path, f"{ticker}_{data_type}_parsed.csv")
             
             print(f"\nParsing {data_type} for {ticker} from {html_file}")
             with open(os.path.join(html_path, html_file), 'r', encoding='utf-8') as f:
@@ -221,24 +202,19 @@ if __name__ == "__main__":
         print(f"\nAttempt {attempt} - Tickers to crawl: {len(tickers)}")
         # crawl dữ liệu
         crawler = FinancialCrawler()
-        for ticker in tickers:
-            print(f"\nTicker {ticker}:")
-            crawler.crawl_financials(ticker, path)
+        crawler.crawl_financials(tickers, path)
         print("\nCrawling completed.")
         crawler.quit()
 
         # parse dữ liệu
         parser = FinancialParser()
-        income_statement_results, balance_sheet_results, cash_flow_results = parser.parse_all_html(path)
+        parse_results = parser.parse_all_html(path)
         print("\nParsing completed.")
 
         # ghi lại logs
-        with open(os.path.join(logs_path, f"income_statement_attempt_{attempt}.json"), 'w') as f:
-            f.write(json.dumps(income_statement_results, indent=4))
-        with open(os.path.join(logs_path, f"balance_sheet_attempt_{attempt}.json"), 'w') as f:
-            f.write(json.dumps(balance_sheet_results, indent=4))
-        with open(os.path.join(logs_path, f"cash_flow_attempt_{attempt}.json"), 'w') as f:
-            f.write(json.dumps(cash_flow_results, indent=4))
+        for data_type, result in parse_results.items():
+            with open(os.path.join(logs_path, f"{data_type}_attempt_{attempt}.json"), 'w') as f:
+                f.write(json.dumps(result, indent=4))
         print(f"\nLogs saved for attempt {attempt}.")
 
 
