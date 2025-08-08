@@ -47,7 +47,7 @@ class FinancialCrawler(BaseCrawler):
             try:
                 for data_type, endpoint in data_type_endpoints.items():
                     # crawl loại dữ liệu tương ứng
-                    url = urljoin(BASE_URL, ticker, endpoint)
+                    url = urljoin(BASE_URL, urljoin(ticker, endpoint))
                     self.driver.get(url)
                     print(f"\nCrawling {data_type} from {self.driver.title}")
                     time.sleep(wait_time)  # đợi trang load xong

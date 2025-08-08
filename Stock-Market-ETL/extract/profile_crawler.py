@@ -20,8 +20,8 @@ class ProfileCrawler(BaseCrawler):
     def crawl_profile(self, tickers, save_path, wait_time=5):
         tickers = [ticker.upper() for ticker in tickers]  # đảm bảo ticker là chữ hoa
         for ticker in tickers:
-            print(f"\nTicker {ticker}:")
-            url = urljoin(BASE_URL, ticker, "profile")
+            url = urljoin(BASE_URL, urljoin(ticker, "profile")) # url riêng của từng ticker
+            print(f"\nTicker {ticker}: {url}")
             self.driver.get(url)
             print(f"Crawling company profile from {self.driver.title}")
 

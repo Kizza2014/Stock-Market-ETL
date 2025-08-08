@@ -20,8 +20,8 @@ class StatisticsCrawler(BaseCrawler):
         tickers = [ticker.upper() for ticker in tickers]  # chuyển tất cả mã thành chữ hoa
         for ticker in tickers:
             # crawl key statistics
-            print(f"\nTicker {ticker}:")
-            url = urljoin(BASE_URL, ticker, "key-statistics")
+            url = urljoin(BASE_URL, urljoin(ticker, "key-statistics")) # url riêng của từng ticker
+            print(f"\nTicker {ticker}: {url}")
             self.driver.get(url)
             print(f"Crawling key statistics from {self.driver.title}")
             time.sleep(wait_time)  # đợi trang load xong

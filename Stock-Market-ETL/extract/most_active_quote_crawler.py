@@ -1,16 +1,12 @@
 from selenium.webdriver.common.by import By
 import time
-from datetime import date
 import os
 from .base_crawler import BaseCrawler
-from minio_utils import upload_html_content_to_minio, create_minio_client
+from minio_utils import MinioClient
 from urllib.parse import urljoin
-from dotenv import load_dotenv
 
-
-load_dotenv()  # Load environment variables from .env file
 URL = "https://finance.yahoo.com/markets/stocks/most-active/"
-SAVE_PATH = "active_tickers" # lưu trữ trên local, sau này sẽ thay bằng đường dẫn đến S3 bucket
+ROOT_SAVE_PATH = os.getenv("ACTIVE_TICKERS_ROOT_PATH", "type=active_tickers")  # Lấy tên root path từ biến môi trường
 BUCKET_NAME = os.getenv("LANDING_BUCKET", "landing")  # Lấy tên bucket từ biến môi trường
 
 class MostActiveQuoteCrawler(BaseCrawler):
@@ -25,21 +21,22 @@ class MostActiveQuoteCrawler(BaseCrawler):
         html = self.driver.page_source
         return html
 
-    def crawl_all_tickers(self, url, save_path, count=50):
+    def crawl_all_tickers(self, crawl_date, count=50, wait_time=2):
         # connect to the URL
-        self.driver.get(url)
+        self.driver.get(URL)
         print(f"Crawling all tickers from {self.driver.title}")
         total = self.get_total() # get the total number of most active tickers
 
         # tạo minio client 1 lần duy nhất
-        minio_client = create_minio_client()
+        minio_client = MinioClient()
+        minio_client.ensure_bucket_exists(BUCKET_NAME)
 
         for i in range(0, total, count):
-            html = self.crawl_tickers_from_idx(url, start=i, count=count)
+            html = self.crawl_tickers_from_idx(URL, start=i, count=count)
             # tạo minio client và upload file
-            object_name = os.path.join(save_path, f"stocks_most_active_page_{i // count + 1}.html")
-            upload_html_content_to_minio(minio_client, BUCKET_NAME, html, object_name)
-            time.sleep(2) # Thêm thời gian chờ để tránh bị chặn
+            object_name = os.path.join(ROOT_SAVE_PATH, f"date={crawl_date}", f"stocks_most_active_page_{i // count + 1}.html")
+            minio_client.upload_html_content_to_minio(BUCKET_NAME, html, object_name)
+            time.sleep(wait_time) # Thêm thời gian chờ để tránh bị chặn
 
     def get_total(self):
         try:
@@ -59,28 +56,5 @@ class MostActiveQuoteCrawler(BaseCrawler):
             return None
 
 
-
-
-
 if __name__ == "__main__":
-    print("\n\n================== MOST ACTIVE QUOTES CRAWLING ==================\n")
-
-    # đường dẫn lưu rawl html và parsed csv
-    crawl_date = date.today().strftime("%Y_%m_%d")
-    print(f"Crawling date: {crawl_date}")
-    path = os.path.join(SAVE_PATH, f"{crawl_date}")
-    print(f"Path to save crawled data: {path}")
-    # create_folder_if_not_exists(path)
-
-    # crawl dữ liệu
-    crawler = MostActiveQuoteCrawler()
-    crawler.crawl_all_tickers(URL, save_path=path)
-    print("\nCrawling completed.")
-    crawler.quit()
-    
-    # # parse dữ liệu và lưu vào csv
-    # parser = MostActiveQuoteParser()
-    # parser.parse_all_html(path=path)
-    # print("\nParsing completed.")
-
-    print("\n\n================== MOST ACTIVE QUOTES CRAWLING COMPLETED ==================\n")
+    pass
