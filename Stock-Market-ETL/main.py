@@ -1,8 +1,8 @@
-from extract import MostActiveQuoteCrawler
-from load import MostActiveQuoteParser
+from extract import MostActiveQuoteCrawler, HistoryCrawler, ProfileCrawler
+from load import MostActiveQuoteParser, HistoryParser
 from datetime import date
 from dotenv import load_dotenv
-from minio_utils import MinioClient
+
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -16,20 +16,27 @@ def crawl_active_tickers(crawl_date):
 def parse_active_tickers(parse_date):
     print("\n\n================== MOST ACTIVE QUOTES PARSING ==================\n")
     parser = MostActiveQuoteParser()
-    parser.parse_all_html(parse_date=parse_date)
+    most_active_tickers = parser.parse_all_html(parse_date=parse_date)
     print("\nParsing completed.")
+    return most_active_tickers
 
-def crawl_histories(crawl_date):
+def crawl_histories(tickers, crawl_date):
     print("\n\n================== HISTORY CRAWLING ==================\n")
-    # Implement history crawling logic here
+    crawler = HistoryCrawler()
+    crawler.crawl_all_daily_histories(tickers=tickers, crawl_date=crawl_date)
+    print("\nCrawling completed.")
 
 def parse_histories(parse_date):
     print("\n\n================== HISTORY PARSING ==================\n")
-    # Implement history parsing logic here
+    parser = HistoryParser()
+    parser.parse_all_html(parse_date=parse_date)
+    print("\nParsing completed.")
 
-def crawl_profiles(crawl_date):
+def crawl_profiles(tickers, crawl_date):
     print("\n\n================== PROFILE CRAWLING ==================\n")
-    # Implement profile crawling logic here
+    crawler = ProfileCrawler()
+    crawler.crawl_profile(tickers, crawl_date)
+    print("\nCrawling completed.")
 
 def parse_profiles(parse_date):
     print("\n\n================== PROFILE PARSING ==================\n")
@@ -62,4 +69,13 @@ if __name__ == "__main__":
     # crawl_active_tickers(crawl_date=crawl_date)
 
     # parse active tickers
-    # parse_active_tickers(parse_date=crawl_date)
+    most_active_tickers = parse_active_tickers(parse_date=crawl_date) # liệt kê danh sách tickers để crawl thông tin chi tiết
+
+    # crawl history
+    # crawl_histories(tickers=most_active_tickers, crawl_date=crawl_date)
+
+    # # parse history
+    # parse_histories(parse_date=crawl_date)
+
+    # crawl profile
+    crawl_profiles(tickers=most_active_tickers, crawl_date=crawl_date)

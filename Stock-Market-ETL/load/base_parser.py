@@ -2,7 +2,11 @@ import re
 
 class BaseParser:
     def __init__(self):
-        pass
+        self.parsing_results = {
+            "data_type": None,
+            "total_tickers": 0,
+            "parse_date": None
+        }
 
     def parse_html(self, html):
         raise NotImplementedError("Subclasses should implement this method.")

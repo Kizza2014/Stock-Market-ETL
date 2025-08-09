@@ -1,18 +1,21 @@
+import json
 import os
 from bs4 import BeautifulSoup
-from .parse_utils import save_to_csv, check_valid_folder
-from datetime import date
+from .base_parser import BaseParser
+from minio_utils import MinioClient
 
 
-class HistoryParser:
-    def normalize_schema(self, schema):
-        # Chuyển đổi schema về dạng chữ thường và loại bỏ khoảng trắng
-        return [col.lower().replace(' ', '_') for col in schema]
+LANDING_BUCKET = os.getenv("LANDING_BUCKET", "landing")  # Lấy tên bucket từ biến môi trường
+BRONZE_BUCKET = os.getenv("BRONZE_BUCKET", "bronze")
+ROOT_SAVE_PATH = "type=history"
 
-    def parse_html(self, html_path, save_path):
-        with open(html_path, 'r', encoding='utf-8') as f:
-            html = f.read()
-        soup = BeautifulSoup(html, 'html.parser')
+
+class HistoryParser(BaseParser):
+    def __init__(self):
+        super().__init__()
+
+    def parse_html(self, html_content, minio_client, save_path):
+        soup = BeautifulSoup(html_content, 'html.parser')
         table = soup.find('table')
         rows_data = []
         if table:
@@ -29,36 +32,46 @@ class HistoryParser:
                     rows_data.append(cell_values)
             print(f"Tổng số dòng: {len(rows_data) - 1}") # trừ đi header row
         
-        # lưu dữ liệu vào file CSV
-        save_to_csv(rows_data, schema, save_path)
+        # lưu dữ liệu vào minio dưới dạng parquet
+        if len(rows_data) > 0:
+            minio_client.upload_to_minio_as_parquet(rows_data, schema, save_path, BRONZE_BUCKET)
+            return True
 
-        return len(rows_data) > 0 # nếu có dữ liệu, ngược lại tính là fail
+        return False
 
 
-    def parse_all_html(self, path, tickers):
-        check_valid_folder(path)
+    def parse_all_html(self, parse_date):
+        # tạo minio client 1 lần duy nhất
+        minio_client = MinioClient()
 
-        tickers = [ticker.upper() for ticker in tickers]  # đảm bảo ticker là chữ hoa
-        available_html = {ticker: file for file in os.listdir(path) if file.endswith('.html') and file.split('_')[0] in tickers}
+        # kiểm tra xem dữ liệu đã được crawl chưa
+        files_path = os.path.join(ROOT_SAVE_PATH, f"date={parse_date}")
+        files_list = minio_client.list_files_in_folder(LANDING_BUCKET, files_path)
+        html_files = [f for f in files_list if f.endswith('.html')]
+        
         # parse html cho từng mã và lưu vào file csv
-        parse_results = {
-            "parse_date": date.today().strftime("%Y-%m-%d"),
-            "data_type": "history",
-            "total_tickers": len(available_html),
-            "tickers": {}
-        }
-        for ticker, html_file in available_html.items():
+        for html_file in html_files:
+            filename = html_file.split('/')[-1]
+            ticker = filename.split('_')[0].upper()  # lấy ticker từ tên file
             # kết quả được lưu cùng đường dẫn với file HTML
-            save_path = os.path.join(path, f"{ticker}_history_parsed.csv")
+            save_path = os.path.join(files_path, f"{ticker}_history_parsed.parquet")
 
-            print(f"\nParsing file: {html_file}")
-            html_path = os.path.join(path, html_file)
-            parse_status = self.parse_html(html_path, save_path)
-            print(f"Status: {'succeeded' if parse_status else 'failed'}")
-            parse_results["tickers"][ticker] = "succeeded" if parse_status else "failed"
-        print(f"\nĐã xử lý xong {len(available_html)} file HTML.")
+            print(f"\nParsing file: {filename}")
+            html_content = minio_client.read_html_content_from_minio(LANDING_BUCKET, html_file)
+            parse_status = self.parse_html(html_content, minio_client, save_path)
+            if parse_status:
+                print(f"Parsed {ticker} history successfully and saved to {save_path}")
+                self.parsing_results["total_succeeded"] = self.parsing_results.get("total_succeeded", 0) + 1
+            else:
+                print(f"Failed to parse {ticker} history")
+                self.parsing_results["total_failed"] = self.parsing_results.get("total_failed", 0) + 1
 
-        parse_results["total_succeeded"] = sum(1 for status in parse_results["tickers"].values() if status == "succeeded")
-        parse_results["total_failed"] = sum(1 for status in parse_results["tickers"].values() if status == "failed")
-        parse_results["need_to_crawl_again"] = [ticker for ticker, status in parse_results["tickers"].items() if status == "failed"]
-        return parse_results
+        print(f"\nĐã xử lý xong {len(html_files)} file HTML.")
+
+        # lưu lại kết quả vào minio
+        self.parsing_results["data_type"] = "history"
+        self.parsing_results["total_tickers"] = len(html_files)
+        self.parsing_results["parse_date"] = parse_date
+        results_json = json.dumps(self.parsing_results, indent=4)
+        results_path = os.path.join(files_path, "parsing_results.json")
+        minio_client.upload_json_content_to_minio(BRONZE_BUCKET, results_json, results_path)

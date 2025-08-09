@@ -4,6 +4,8 @@ import os
 from .base_crawler import BaseCrawler
 from minio_utils import MinioClient
 from urllib.parse import urljoin
+import json
+
 
 URL = "https://finance.yahoo.com/markets/stocks/most-active/"
 ROOT_SAVE_PATH = os.getenv("ACTIVE_TICKERS_ROOT_PATH", "type=active_tickers")  # Lấy tên root path từ biến môi trường
@@ -37,6 +39,14 @@ class MostActiveQuoteCrawler(BaseCrawler):
             object_name = os.path.join(ROOT_SAVE_PATH, f"date={crawl_date}", f"stocks_most_active_page_{i // count + 1}.html")
             minio_client.upload_html_content_to_minio(BUCKET_NAME, html, object_name)
             time.sleep(wait_time) # Thêm thời gian chờ để tránh bị chặn
+
+        # lưu lại kết quả vào minio
+        self.crawling_results["data_type"] = "active_tickers"
+        self.crawling_results["total_tickers"] = total
+        self.crawling_results["crawl_date"] = crawl_date
+        results_path = os.path.join(ROOT_SAVE_PATH, f"date={crawl_date}", "crawling_results.json")
+        results_json = json.dumps(self.crawling_results, indent=4)
+        minio_client.upload_json_content_to_minio(BUCKET_NAME, results_json, results_path)
 
     def get_total(self):
         try:

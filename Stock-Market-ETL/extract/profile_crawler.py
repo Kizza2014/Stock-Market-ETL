@@ -1,96 +1,76 @@
 import time
-from datetime import date
 import os
-import pandas as pd
-import json
 from .base_crawler import BaseCrawler
-from urllib.parse import urljoin
+from minio_utils import MinioClient
 
 
-BASE_URL = "https://finance.yahoo.com/quote/"
-SAVE_PATH = "./data_test/crawl_profile/"
-MOST_ACTIVE_QUOTES_PATH = "./data_test/crawl_active_tickers/most_active_quotes_parsed.csv"  # đường dẫn đến file chứa các mã đã crawl
+BASE_URL = "https://finance.yahoo.com/quote"
+ROOT_SAVE_PATH = "type=profile"
+LANDING_BUCKET = os.getenv("LANDING_BUCKET", "landing")
 MAX_ATTEMPT = 5  # số lần thử tối đa khi crawl dữ liệu
 
 
 class ProfileCrawler(BaseCrawler):
     def __init__(self):
         super().__init__()
+        self.crawling_results["data_type"] = "profile"
 
-    def crawl_profile(self, tickers, save_path, wait_time=5):
+    def crawl_profile(self, tickers, crawl_date, wait_time=4):
         tickers = [ticker.upper() for ticker in tickers]  # đảm bảo ticker là chữ hoa
-        for ticker in tickers:
-            url = urljoin(BASE_URL, urljoin(ticker, "profile")) # url riêng của từng ticker
-            print(f"\nTicker {ticker}: {url}")
-            self.driver.get(url)
-            print(f"Crawling company profile from {self.driver.title}")
 
-        # lấy toàn bộ HTML sau khi đã render và lưu lại
-        time.sleep(wait_time)  # đợi trang load xong
+        # tạo minio client để upload dữ liệu 1 lần duy nhất
+        minio_client = MinioClient()
+
+        for ticker in tickers:
+            success = False
+
+            # Thử lại nhiều lần nếu có lỗi
+            for attempt in range(1, MAX_ATTEMPT + 1):
+                try:
+                    print(f"\nTicker {ticker} - Attempt {attempt}/{MAX_ATTEMPT}")
+                    # Thử crawl ticker
+                    if self._crawl_single_ticker(ticker, crawl_date, minio_client, wait_time):
+                        success = True
+                        self.mark_ticker_as_succeeded(ticker)
+                        break
+                        
+                except Exception as e:
+                    print(f"Attempt {attempt} failed for {ticker}: {e}")
+                    if attempt < MAX_ATTEMPT:
+                        retry_wait = attempt * 2  # exponential backoff
+                        print(f"Waiting {retry_wait} seconds before retry...")
+                        time.sleep(retry_wait)
+                    
+            if not success:
+                print(f"Failed to crawl {ticker} after {MAX_ATTEMPT} attempts")
+                self.mark_ticker_as_failed(ticker)
+
+    def _crawl_single_ticker(self, ticker, crawl_date, minio_client, wait_time):
+        # url riêng của từng ticker
+        url = BASE_URL + "/" + ticker + "/profile/"
+        print(f"URL: {url}")
+        
+        self.driver.get(url)
+        print(f"Crawling profile of {ticker} from {self.driver.title}")
+
+        # đợi render đầy đủ
+        time.sleep(wait_time)
+
+        # lấy toàn bộ HTML sau khi đã render
         html = self.driver.page_source
-        html_path = os.path.join(save_path, f"{ticker}_profile.html")
-        # save_html(html, html_path)
+
+        # kiểm tra xem html có rỗng hay chứa lỗi không
+        print("Checking html content...")
+        if self.is_error_html_content(html):
+            print(f"HTML content for {ticker} is empty or contains an error.")
+            return False
+
+        # lưu lại html
+        html_path = os.path.join(ROOT_SAVE_PATH, f"date={crawl_date}", f"{ticker}_profile.html")
+        minio_client.upload_html_content_to_minio(LANDING_BUCKET, html, html_path)
+        print(f"Successfully crawled {ticker}")
+        return True
 
 
 if __name__ == "__main__":
     pass
-    # print("\n\n================== PROFILE CRAWLING  ==================\n")
-    
-    # # đường dẫn lưu rawl html và parsed csv
-    # crawl_date = date.today().strftime("%Y_%m_%d")
-    # print(f"Crawling date: {crawl_date}")
-    # path = os.path.join(SAVE_PATH, f"crawled_on_{crawl_date}")
-    # print(f"Path to save crawled data: {path}")
-    # create_folder_if_not_exists(path)
-
-    # # đường dẫn lưu logs
-    # logs_path = os.path.join(path, "logs")
-    # create_folder_if_not_exists(logs_path)
-
-    # for _ in range(MAX_ATTEMPT):
-    #     # tìm file log mới nhất, nếu không thì crawl lại từ đầu
-    #     log_files = [f for f in os.listdir(logs_path) if f.endswith('.json')]
-    #     log_files.sort(reverse=True)  # sắp xếp theo thứ tự giảm dần
-    #     if log_files:
-    #         latest_log_file = log_files[0]
-    #         log_file_name = os.path.splitext(latest_log_file)[0]
-    #         attempt = int(log_file_name.split("_")[-1]) + 1  # thứ tự của lần crawl
-    #         print(f"\nĐang sử dụng lại file logs: {latest_log_file} (attempt {attempt})")
-    #         # đọc nội dung file logs
-    #         with open(os.path.join(logs_path, latest_log_file), 'r') as f:
-    #             logs = json.load(f)
-    #         tickers = logs.get("need_to_crawl_again", [])
-    #         if not tickers:
-    #             print("\nKhông có mã nào cần crawl lại, kết thúc quá trình.")
-    #             break  # nếu không có mã nào cần crawl lại thì kết thúc vòng lặp
-    #     else:
-    #         print("\nKhông tìm thấy file logs, crawl toàn bộ mã")
-    #         attempt = 1  # nếu chưa có file logs nào thì đây là lần crawl đầu tiên
-    #         most_active_quotes_path = f"./data_test/crawl_active_tickers/crawled_on_{crawl_date}/most_active_quotes_parsed.csv"  
-    #         active_quotes_df = pd.read_csv(most_active_quotes_path)
-    #         tickers = active_quotes_df['symbol'].unique().tolist()
-
-
-    #     print(f"\nAttempt {attempt} - Tickers to crawl: {len(tickers)}")
-
-    #     # crawl dữ liệu
-    #     crawler = ProfileCrawler()
-    #     crawler.crawl_profile(tickers, path)
-    #     print("\nCrawling completed.")
-    #     crawler.quit()
-
-    #     # trong thực tế, chỉ thực hiện crawl 1 lần cho những mã chưa xuất hiện trong database, các mã đã có chỉ crawl daily
-    #     # -> cần thêm logic xử lí sau này
-        
-    #     # parse dữ liệu
-    #     parser = ProfileParser()
-    #     parse_results = parser.parse_all_html(path)
-    #     print("\nParsing completed.")
-        
-    #     # ghi lại log
-    #     log_file_path = os.path.join(logs_path, f"attempt_{attempt}.json")
-    #     with open(log_file_path, 'w') as f:
-    #         f.write(json.dumps(parse_results, indent=4, ensure_ascii=False))
-    #     print(f"\nĐã lưu log vào file: {log_file_path}")
-
-    # print("\n\n================== PROFILE CRAWLING COMPLETED  ==================\n")

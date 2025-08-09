@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from .base_parser import BaseParser
 from minio_utils import MinioClient
 import os
+import json
 
 
 LANDING_BUCKET = os.getenv("LANDING_BUCKET", "landing")  # Lấy tên bucket từ biến môi trường
@@ -18,13 +19,14 @@ class MostActiveQuoteParser(BaseParser):
         minio_client = MinioClient()
 
         # kiểm tra nội dung bucket
-        htmls_path = os.path.join(ROOT_SAVE_PATH, f"date={parse_date}")
-        html_files = minio_client.list_files_in_folder(LANDING_BUCKET, htmls_path)
+        files_path = os.path.join(ROOT_SAVE_PATH, f"date={parse_date}")
+        files_list = minio_client.list_files_in_folder(LANDING_BUCKET, files_path)
+        html_files = [f for f in files_list if f.endswith('.html')]
         if not html_files:
-            print(f"No HTML files found in bucket '{LANDING_BUCKET}' at path '{htmls_path}'.")
+            print(f"No HTML files found in bucket '{LANDING_BUCKET}' at path '{files_path}'.")
             return
 
-        print(f"Parsing HTML files in bucket '{LANDING_BUCKET}' at path '{htmls_path}'...")
+        print(f"Parsing HTML files in bucket '{LANDING_BUCKET}' at path '{files_path}'...")
         rows_data =[]
         schema = None
         for file in html_files:
@@ -45,10 +47,23 @@ class MostActiveQuoteParser(BaseParser):
         minio_client.upload_to_minio_as_parquet(rows_data, schema, save_path, BRONZE_BUCKET)
         print(f"Đã xử lí {len(rows_data)} dòng dữ liệu với schema: {schema}")
 
+        # lưu lại kết quả parse
+        most_active_tickers = [row[0] for row in rows_data]
+        self.parsing_results["data_type"] = "active_tickers"
+        self.parsing_results["total_tickers"] = len(most_active_tickers)
+        self.parsing_results["parse_date"] = parse_date
+        results_json = json.dumps(self.parsing_results, indent=4)
+        results_path = os.path.join(ROOT_SAVE_PATH, f"date={parse_date}", "parsing_results.json")
+        minio_client.upload_json_content_to_minio(BRONZE_BUCKET, results_json, results_path)
+
+        # trả về danh sách tickers đã crawl
+        return most_active_tickers
+
     def parse_html(self, html):
         soup = BeautifulSoup(html, 'html.parser')
         table = soup.find('table')
         rows_data = []
+        schema = None
         if table:
             rows = table.find_all('tr')
 

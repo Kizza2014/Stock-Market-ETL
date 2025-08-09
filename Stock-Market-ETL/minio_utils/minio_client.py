@@ -72,6 +72,21 @@ class MinioClient:
         else:
             print(f"Bucket '{bucket_name}' does not exist. Cannot upload HTML content.")
 
+    def upload_json_content_to_minio(self, bucket_name, json_content, object_name):
+        """Upload JSON content (string) directly to MinIO without saving to disk."""
+        if self.is_bucket_exists(bucket_name):
+            data = json_content.encode("utf-8")
+            self.client.put_object(
+                bucket_name,
+                object_name,
+                io.BytesIO(data),   # serialize trước khi upload vào minio, do minio chỉ hỗ trợ stream hoặc file
+                length=len(data),
+                content_type="application/json"
+            )
+            print(f"JSON content uploaded to bucket '{bucket_name}' as '{object_name}'.")
+        else:
+            print(f"Bucket '{bucket_name}' does not exist. Cannot upload JSON content.")
+
     def upload_to_minio_as_parquet(self, rows_data, schema, object_name, bucket_name):
         """Convert dữ liệu thành parquet và upload trực tiếp lên MinIO (không lưu file vật lý)."""
         if not rows_data or not schema:
