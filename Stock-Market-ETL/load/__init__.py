@@ -1,4 +1,4 @@
-from .financial_parser import *
+from .income_statement_parser import *
 from .history_parser import *
 from .most_active_quote_parser import *
 from .parse_utils import *

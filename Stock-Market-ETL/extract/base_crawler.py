@@ -1,6 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-import json
+import time
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class BaseCrawler:
@@ -20,10 +23,10 @@ class BaseCrawler:
         # options.add_argument("--start-maximized")  # Chỉ giữ nếu không dùng headless
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--disable-extensions")
-        options.add_argument("--no-sandbox")  # Chỉ giữ nếu chạy trên Linux/Docker
+        # options.add_argument("--no-sandbox")  # Chỉ giữ nếu chạy trên Linux/Docker
         # options.add_argument("--disable-dev-shm-usage")  # Chỉ giữ nếu chạy trên Docker
         options.add_argument("--disable-gpu")
-        options.add_argument('--headless=new')
+        # options.add_argument('--headless=new')
 
         # Thêm User-Agent để mô phỏng trình duyệt thực
         options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
@@ -33,15 +36,25 @@ class BaseCrawler:
         return webdriver.Chrome(options=options)
     
     def is_error_html_content(self, html_content):
+        # Chuyển nội dung HTML về chữ thường để kiểm tra không phân biệt case
+        html_lower = html_content.lower()
+        
         error_indicators = [
-            "Will be right back...",
-            "Thank you for your patience.",
-            "Not Found on Server",
+            "will be right back...",
+            "thank you for your patience.",
+            "not found on server",
             '<!-- status code : 404 -->',
-            '<p id="message-1"> Thank you for your patience.</p>',
-            '<p id="message-2"> Our engineers are working quickly to resolve the issue.</p>'
+            '<p id="message-1"> thank you for your patience.</p>',
+            '<p id="message-2"> our engineers are working quickly to resolve the issue.</p>',
+            # Các indicator mới cho lỗi "Oops, something went wrong"
+            "oops, something went wrong",
+            "that page can't be found",
+            "try exploring the menu or using search to find what you are looking for.",
+            "skip to navigation"  # Một phần phổ biến trong trang lỗi của Yahoo
         ]
-        return any(indicator in html_content for indicator in error_indicators)
+        
+        # Kiểm tra nếu bất kỳ indicator nào tồn tại trong nội dung (không phân biệt case)
+        return any(indicator.lower() in html_lower for indicator in error_indicators)
     
     def mark_ticker_as_succeeded(self, ticker):
         self.crawling_results["tickers"][ticker] = "succeeded"
@@ -51,6 +64,18 @@ class BaseCrawler:
         self.crawling_results["tickers"][ticker] = "failed"
         self.crawling_results["total_failed"] += 1
         self.crawling_results["need_to_crawl_again"].append(ticker)
+
+    def show_quarterly_data(self, wait_time=20):
+        try:
+            # Đợi nút quarterly xuất hiện rồi mới click
+            quarterly_btn = WebDriverWait(self.driver, wait_time).until(
+                EC.element_to_be_clickable((By.ID, "tab-quarterly"))
+            )
+            quarterly_btn.click()
+            print("Đã bấm nút Quarterly.")
+            time.sleep(2)  # đợi dữ liệu quarterly load lại
+        except Exception as e:
+            print(f"Error clicking Quarterly button: {str(e)}")
 
     def quit(self):
         self.driver.quit()

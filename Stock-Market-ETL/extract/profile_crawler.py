@@ -1,3 +1,4 @@
+import json
 import time
 import os
 from .base_crawler import BaseCrawler
@@ -5,7 +6,7 @@ from minio_utils import MinioClient
 
 
 BASE_URL = "https://finance.yahoo.com/quote"
-ROOT_SAVE_PATH = "type=profile"
+ROOT_SAVE_PATH = os.getenv("PROFILES_ROOT_PATH", "type=profile")
 LANDING_BUCKET = os.getenv("LANDING_BUCKET", "landing")
 MAX_ATTEMPT = 5  # số lần thử tối đa khi crawl dữ liệu
 
@@ -45,6 +46,13 @@ class ProfileCrawler(BaseCrawler):
                 print(f"Failed to crawl {ticker} after {MAX_ATTEMPT} attempts")
                 self.mark_ticker_as_failed(ticker)
 
+        # lưu lại kết quả
+        self.crawling_results["crawl_date"] = crawl_date
+        self.crawling_results["total_tickers"] = len(tickers)
+        results_json = json.dumps(self.crawling_results, indent=4)
+        results_path = os.path.join(ROOT_SAVE_PATH, f"date={crawl_date}", "crawling_results.json")
+        minio_client.upload_json_content_to_minio(LANDING_BUCKET, results_json, results_path)
+
     def _crawl_single_ticker(self, ticker, crawl_date, minio_client, wait_time):
         # url riêng của từng ticker
         url = BASE_URL + "/" + ticker + "/profile/"
@@ -60,6 +68,8 @@ class ProfileCrawler(BaseCrawler):
         html = self.driver.page_source
 
         # kiểm tra xem html có rỗng hay chứa lỗi không
+        with open("./soun.html", "w") as f:
+            f.write(html)
         print("Checking html content...")
         if self.is_error_html_content(html):
             print(f"HTML content for {ticker} is empty or contains an error.")

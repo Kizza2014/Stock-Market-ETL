@@ -5,7 +5,7 @@ from  minio_utils import MinioClient
 
 
 BASE_URL = "https://finance.yahoo.com/quote"
-ROOT_SAVE_PATH = "type=statistics"
+ROOT_SAVE_PATH = os.getenv("STATISTICS_ROOT_PATH", "type=statistics")
 LANDING_BUCKET = os.getenv("LANDING_BUCKET", "landing")
 MAX_ATTEMPT = 5
 

@@ -2,10 +2,25 @@ from .parse_utils import save_to_csv, check_valid_folder
 from bs4 import BeautifulSoup
 import os
 from datetime import date
+from minio_utils import MinioClient
 
 
-class FinancialParser:
+LANDING_BUCKET = os.getenv("LANDING_BUCKET", "landing")
+BRONZE_BUCKET = os.getenv("BRONZE_BUCKET", "bronze")
+ROOT_SAVE_PATH = os.getenv("INCOME_STATEMENT_ROOT_PATH", "type=income_statement")
+
+
+class IncomeStatementParser:
+    def __init__(self):
+        super().__init__()
+        self.parsing_results["data_type"] = "income_statement"
+
     def parse_all_html(self, path):
+        # tạo minio client
+        minio_client = MinioClient()
+
+        # kiểm tra xem dữ liệu đã được crawl chưa
+
         check_valid_folder(path)
 
         data_types = ["income_statement", "balance_sheet", "cash_flow"]

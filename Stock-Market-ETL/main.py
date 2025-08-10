@@ -1,5 +1,7 @@
-from extract import MostActiveQuoteCrawler, HistoryCrawler, ProfileCrawler
-from load import MostActiveQuoteParser, HistoryParser
+from extract import (MostActiveQuoteCrawler, HistoryCrawler, ProfileCrawler, StatisticsCrawler,
+                     IncomeStatementCrawler)
+from load import (MostActiveQuoteParser, HistoryParser, ProfileParser, StatisticsParser,
+                  IncomeStatementParser)
 from datetime import date
 from dotenv import load_dotenv
 
@@ -40,42 +42,65 @@ def crawl_profiles(tickers, crawl_date):
 
 def parse_profiles(parse_date):
     print("\n\n================== PROFILE PARSING ==================\n")
-    # Implement profile parsing logic here
+    parser = ProfileParser()
+    parser.parse_all_html(parse_date=parse_date)
+    print("\nParsing completed.")
 
-def crawl_statistics(crawl_date):
+def crawl_statistics(tickers, crawl_date):
     print("\n\n================== STATISTICS CRAWLING ==================\n")
-    # Implement statistics crawling logic here  
+    crawler = StatisticsCrawler()
+    crawler.crawl_statistics(tickers, crawl_date=crawl_date)
+    print("\nCrawling completed.") 
 
 def parse_statistics(parse_date):
     print("\n\n================== STATISTICS PARSING ==================\n")
-    # Implement statistics parsing logic here
+    parser = StatisticsParser()
+    parser.parse_all_html(parse_date=parse_date)
+    print("\nParsing completed.")
 
-def crawl_financials(crawl_date):
-    print("\n\n================== FINANCIALS CRAWLING ==================\n")
-    # Implement financials crawling logic here
+def crawl_income_statement(tickers, crawl_date):
+    print("\n\n================== INCOME STATEMENT CRAWLING ==================\n")
+    crawler = IncomeStatementCrawler()
+    crawler.crawl_income_statement(tickers, crawl_date=crawl_date)
+    print("\nCrawling completed.")
 
-def parse_financials(parse_date):
-    print("\n\n================== FINANCIALS PARSING ==================\n")
-    # Implement financials parsing logic here
+def parse_income_statement(parse_date):
+    print("\n\n================== INCOME STATEMENT PARSING ==================\n")
+    parser = IncomeStatementParser()
+    parser.parse_all_html(parse_date=parse_date)
+    print("\nParsing completed.")
 
 
 if __name__ == "__main__":
     load_dotenv()  # Load environment variables from .env file
 
-    crawl_date = date.today().strftime("%Y_%m_%d")
+    # crawl_date = date.today().strftime("%Y_%m_%d")
+    crawl_date = "2025_08_09"
     print(f"Crawling date: {crawl_date}")
 
-    # # crawl active tickers
-    # crawl_active_tickers(crawl_date=crawl_date)
+    # crawl active tickers
+    crawl_active_tickers(crawl_date=crawl_date)
 
-    # parse active tickers
-    most_active_tickers = parse_active_tickers(parse_date=crawl_date) # liệt kê danh sách tickers để crawl thông tin chi tiết
+    # # parse active tickers
+    # most_active_tickers = parse_active_tickers(parse_date=crawl_date) # liệt kê danh sách tickers để crawl thông tin chi tiết
 
-    # crawl history
+    # # crawl history
     # crawl_histories(tickers=most_active_tickers, crawl_date=crawl_date)
 
     # # parse history
     # parse_histories(parse_date=crawl_date)
 
-    # crawl profile
-    crawl_profiles(tickers=most_active_tickers, crawl_date=crawl_date)
+    # # crawl profile
+    # crawl_profiles(tickers=most_active_tickers, crawl_date=crawl_date)
+
+    # # parse profile
+    # parse_profiles(parse_date=crawl_date)
+
+    # # crawl statistics
+    # crawl_statistics(most_active_tickers, crawl_date=crawl_date)
+
+    # # parse statistics
+    # parse_statistics(parse_date=crawl_date)
+
+    # #  crawl income statement
+    # crawl_income_statement(tickers=most_active_tickers, crawl_date=crawl_date)

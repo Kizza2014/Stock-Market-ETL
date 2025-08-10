@@ -15,3 +15,8 @@ class BaseParser:
         # Chuyển đổi schema về dạng chữ thường và loại bỏ khoảng trắng
         schema = [re.sub(r'[()\.,!@#%$^&*]', '', col) for col in schema]
         return [col.lower().replace(' ', '_') for col in schema]
+
+    def transpose_data(self, rows_data):
+        # Chuyển đổi dữ liệu từ dạng hàng sang dạng cột
+        transposed = list(map(list, zip(*rows_data)))
+        return transposed
