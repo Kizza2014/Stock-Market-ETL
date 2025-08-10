@@ -15,19 +15,21 @@ class IncomeStatementParser:
         super().__init__()
         self.parsing_results["data_type"] = "income_statement"
 
-    def parse_all_html(self, path):
+    def parse_all_html(self, parse_date):
         # tạo minio client
         minio_client = MinioClient()
 
         # kiểm tra xem dữ liệu đã được crawl chưa
+        files_path = os.path.join(ROOT_SAVE_PATH, f"date={parse_date}")
+        
 
-        check_valid_folder(path)
+        check_valid_folder(parse_date)
 
         data_types = ["income_statement", "balance_sheet", "cash_flow"]
         parse_results = {}
         for data_type in data_types:
             # parse dữ liệu cho từng loại tương ứng
-            data_type_path = os.path.join(path, data_type)
+            data_type_path = os.path.join(parse_date, data_type)
             data_type_results = self.parse_transposed_table(data_type_path, data_type=data_type)
             parse_results[data_type] = data_type_results
 
