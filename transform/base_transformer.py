@@ -7,9 +7,11 @@ SILVER_BUCKET = os.getenv("SILVER_BUCKET", "silver")
 BRONZE_PATH = os.getenv("COMPANY_BRONZE_PATH", "type=company")
 SILVER_PATH = os.getenv("COMPANY_SILVER_PATH", "type=company_silver")
 
+
 class BaseTransformer:
     def __init__(self, spark: SparkSession):
         self.spark = spark
+        self.df = self.read()
 
     def read(self, path: str) -> DataFrame:
         # Đọc dữ liệu từ bronze layer (ví dụ: parquet)
