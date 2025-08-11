@@ -4,7 +4,23 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import random
 
+
+import random
+
+USER_AGENTS = [
+    # Chrome
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    # Firefox
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:118.0) Gecko/20100101 Firefox/118.0",
+    # Edge
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+    # Safari
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+]
 
 class BaseCrawler:
     def __init__(self):
@@ -26,10 +42,11 @@ class BaseCrawler:
         # options.add_argument("--no-sandbox")  # Chỉ giữ nếu chạy trên Linux/Docker
         # options.add_argument("--disable-dev-shm-usage")  # Chỉ giữ nếu chạy trên Docker
         options.add_argument("--disable-gpu")
-        # options.add_argument('--headless=new')
+        options.add_argument('--headless=new')
 
-        # Thêm User-Agent để mô phỏng trình duyệt thực
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        # Chọn user-agent ngẫu nhiên
+        user_agent = random.choice(USER_AGENTS)
+        options.add_argument(f"user-agent={user_agent}")
 
         # Tắt các tùy chọn không cần thiết
         # Xóa: --ignore-certificate-errors, --ignore-ssl-errors, --disable-web-security, --allow-running-insecure-content
@@ -76,6 +93,11 @@ class BaseCrawler:
             time.sleep(2)  # đợi dữ liệu quarterly load lại
         except Exception as e:
             print(f"Error clicking Quarterly button: {str(e)}")
+
+    def wait_random_delay(self, min_seconds=2, max_seconds=5):
+        delay = random.uniform(min_seconds, max_seconds)
+        print(f"[Random Delay] Sleeping for {delay:.2f} seconds...")
+        time.sleep(delay)
 
     def quit(self):
         self.driver.quit()

@@ -16,7 +16,7 @@ class IncomeStatementCrawler(BaseCrawler):
         super().__init__()
         self.crawling_results["data_type"] = "income_statement"
 
-    def crawl_income_statement(self, tickers, crawl_date, wait_time=4):
+    def crawl_income_statement(self, tickers, crawl_date, min_delay=4, max_delay=10):
         # tạo minio client 1 lần duy nhất
         minio_client = MinioClient()
 
@@ -28,7 +28,7 @@ class IncomeStatementCrawler(BaseCrawler):
                 url = BASE_URL + "/" + ticker + "/financials/"
                 self.driver.get(url)
                 print(f"\nCrawling income statement from {self.driver.title}")
-                time.sleep(wait_time)  # đợi trang load xong
+                self.wait_random_delay(min_delay, max_delay)
                 
                 ## bấm vào nút "Quarterly" để hiển thị dữ liệu theo từng quý
                 self.show_quarterly_data()

@@ -21,7 +21,7 @@ class MostActiveQuoteCrawler(BaseCrawler):
         # connect to the URL with pagination parameters
         url_with_params = urljoin(url, f"?start={start}&count={count}")
         self.driver.get(url_with_params)
-        print(f"\nCrawling {self.driver.title} from index {start} with count {count}")
+        print(f"Crawling {self.driver.title} from index {start} with count {count}")
         html_content = self.driver.page_source
 
         print("Checking html content...")
@@ -29,7 +29,7 @@ class MostActiveQuoteCrawler(BaseCrawler):
             return None
         return html_content
 
-    def crawl_all_tickers(self, crawl_date, count=50, wait_time=2):
+    def crawl_all_tickers(self, crawl_date, count=50, min_delay=2, max_delay=5):
         # connect to the URL
         self.driver.get(URL)
         print(f"Crawling all tickers from {self.driver.title}")
@@ -45,14 +45,14 @@ class MostActiveQuoteCrawler(BaseCrawler):
             # Thử lại nhiều lần nếu có lỗi
             for attempt in range(1, MAX_ATTEMPT + 1):
                 try:
-                    print(f"Attempt {attempt} for count from {i} to {i + count}")
+                    print(f"\nAttempt {attempt} for count from {i} to {i + count}")
                     html_content = self.crawl_tickers_from_idx(URL, start=i, count=count)
                     if html_content:
                         success = True
                         # upload html lên minio
                         object_name = os.path.join(ROOT_SAVE_PATH, f"date={crawl_date}", f"stocks_most_active_page_{i // count + 1}.html")
                         minio_client.upload_html_content_to_minio(BUCKET_NAME, html_content, object_name)
-                        time.sleep(wait_time) # Thêm thời gian chờ để tránh bị chặn
+                        self.wait_random_delay(min_delay, max_delay) # Thêm thời gian chờ ngẫu nhiên để tránh bị chặn
                         break
                         
                 except Exception as e:

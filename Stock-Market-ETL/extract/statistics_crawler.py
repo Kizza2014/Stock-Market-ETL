@@ -15,7 +15,7 @@ class StatisticsCrawler(BaseCrawler):
         super().__init__()
         self.crawling_results["data_type"] = "statistics"
 
-    def crawl_statistics(self, tickers, crawl_date, wait_time=4):
+    def crawl_statistics(self, tickers, crawl_date, min_delay=4, max_delay=10):
         tickers = [ticker.upper() for ticker in tickers]  # đảm bảo ticker là chữ hoa
 
         # tạo minio client để upload dữ liệu 1 lần duy nhất
@@ -29,7 +29,7 @@ class StatisticsCrawler(BaseCrawler):
                 try:
                     print(f"\nTicker {ticker} - Attempt {attempt}/{MAX_ATTEMPT}")
                     # Thử crawl ticker
-                    if self._crawl_single_ticker(ticker, crawl_date, minio_client, wait_time):
+                    if self._crawl_single_ticker(ticker, crawl_date, minio_client, min_delay, max_delay):
                         success = True
                         self.mark_ticker_as_succeeded(ticker)
                         break
@@ -45,7 +45,7 @@ class StatisticsCrawler(BaseCrawler):
                 print(f"Failed to crawl {ticker} after {MAX_ATTEMPT} attempts")
                 self.mark_ticker_as_failed(ticker)
 
-    def _crawl_single_ticker(self, ticker, crawl_date, minio_client, wait_time):
+    def _crawl_single_ticker(self, ticker, crawl_date, minio_client, min_delay, max_delay):
         # url riêng của từng ticker
         url = BASE_URL + "/" + ticker + "/key-statistics/"
         print(f"URL: {url}")
@@ -54,7 +54,7 @@ class StatisticsCrawler(BaseCrawler):
         print(f"Crawling statistics of {ticker} from {self.driver.title}")
 
         # đợi render đầy đủ
-        time.sleep(wait_time)
+        self.wait_random_delay(min_delay, max_delay)
 
         # lấy toàn bộ HTML sau khi đã render
         html = self.driver.page_source

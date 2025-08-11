@@ -19,7 +19,7 @@ class HistoryCrawler(BaseCrawler):
         super().__init__()
         self.crawling_results["data_type"] = "history"
 
-    def crawl_all_daily_histories(self, tickers, crawl_date, wait_time=5):
+    def crawl_all_daily_histories(self, tickers, crawl_date, min_delay=5, max_delay=10):
         tickers = [ticker.upper() for ticker in tickers]  # đảm bảo ticker là chữ hoa
 
         # tạo minio client để upload dữ liệu 1 lần duy nhất
@@ -33,7 +33,7 @@ class HistoryCrawler(BaseCrawler):
                 try:
                     print(f"\nTicker {ticker} - Attempt {attempt}/{MAX_ATTEMPT}")
                     # Thử crawl ticker
-                    if self._crawl_single_ticker(ticker, crawl_date, minio_client, wait_time):
+                    if self._crawl_single_ticker(ticker, crawl_date, minio_client, min_delay, max_delay):
                         success = True
                         self.mark_ticker_as_succeeded(ticker)
                         break
@@ -56,7 +56,7 @@ class HistoryCrawler(BaseCrawler):
         results_path = os.path.join(ROOT_SAVE_PATH, f"date={crawl_date}", "crawling_results.json")
         minio_client.upload_json_content_to_minio(LANDING_BUCKET, results_json, results_path)
 
-    def _crawl_single_ticker(self, ticker, crawl_date, minio_client, wait_time):
+    def _crawl_single_ticker(self, ticker, crawl_date, minio_client, min_delay, max_delay):
         # url riêng của từng ticker
         url = BASE_URL + "/" + ticker + "/history/"
         print(f"URL: {url}")
@@ -69,7 +69,7 @@ class HistoryCrawler(BaseCrawler):
             return False
 
         # đợi render đầy đủ bảng lịch sử
-        time.sleep(wait_time)
+        self.wait_random_delay(min_delay, max_delay)
 
         # lấy toàn bộ HTML sau khi đã render
         html = self.driver.page_source

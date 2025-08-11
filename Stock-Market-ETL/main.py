@@ -78,11 +78,11 @@ if __name__ == "__main__":
     crawl_date = "2025_08_09"
     print(f"Crawling date: {crawl_date}")
 
-    # crawl active tickers
-    crawl_active_tickers(crawl_date=crawl_date)
+    # # crawl active tickers
+    # crawl_active_tickers(crawl_date=crawl_date)
 
-    # # parse active tickers
-    # most_active_tickers = parse_active_tickers(parse_date=crawl_date) # liệt kê danh sách tickers để crawl thông tin chi tiết
+    # parse active tickers
+    most_active_tickers = parse_active_tickers(parse_date=crawl_date) # liệt kê danh sách tickers để crawl thông tin chi tiết
 
     # # crawl history
     # crawl_histories(tickers=most_active_tickers, crawl_date=crawl_date)
@@ -90,8 +90,8 @@ if __name__ == "__main__":
     # # parse history
     # parse_histories(parse_date=crawl_date)
 
-    # # crawl profile
-    # crawl_profiles(tickers=most_active_tickers, crawl_date=crawl_date)
+    # crawl profile
+    crawl_profiles(tickers=most_active_tickers, crawl_date=crawl_date)
 
     # # parse profile
     # parse_profiles(parse_date=crawl_date)
