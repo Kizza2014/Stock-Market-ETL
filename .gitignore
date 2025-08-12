@@ -1,8 +1,3 @@
-.env
-General-Hospital-ETL/.env
-General-Hospital-ETL/test_data.csv
-Spark-Learning/data
-CRM-demo/.env
 .vscode/settings.json
 extract/data_test/crawl_5_years_history/crawled_on_2025_08_02/*.csv
 extract/data_test/crawl_5_years_history/crawled_on_2025_08_02/*.html
