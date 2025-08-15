@@ -21,5 +21,4 @@ extract/data_test/crawl_statistics/crawled_on_2025_08_02/*.parquet
 minio_utils/__pycache__/*
 extract/__pycache__/*
 load/__pycache__/*
-
-
+transform/__pycache__/*
