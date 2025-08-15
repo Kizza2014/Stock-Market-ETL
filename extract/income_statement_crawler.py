@@ -1,4 +1,3 @@
-import time
 import os
 import json
 from .base_crawler import BaseCrawler

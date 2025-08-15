@@ -58,7 +58,10 @@ class StatisticsParser(BaseParser):
                         values = [td.get_text(strip=True) for td in tr.find_all('td')]
                         rows_data.append(values)
 
-                    rows_data.insert(0, time_row)  # Thêm header vào đầu danh sách
+                    # thêm hàng ticker
+                    ticker_row = ["ticker"] + [ticker]*(len(time_row) - 1)
+                    rows_data.insert(0, ticker_row)  # Thêm ticker vào đầu danh sách
+                    rows_data.insert(1, time_row)  
                     transposed_data = self.transpose_data(rows_data)
                     schema = transposed_data[0]  # Lấy header từ dữ liệu đã chuyển đổi
                     transposed_data = transposed_data[1:]  # Bỏ header ra khỏi dữ liệu
@@ -77,7 +80,7 @@ class StatisticsParser(BaseParser):
         # lưu lại kết quả parse
         self.parsing_results["parse_date"] = parse_date
         results_json = json.dumps(self.parsing_results, indent=4)
-        results_path = os.path.join(files_path, "parsing_results.json")
+        results_path = os.path.join(files_path, "_parsing_results.json")
         minio_client.upload_json_content_to_minio(BRONZE_BUCKET, results_json, results_path)
 
 

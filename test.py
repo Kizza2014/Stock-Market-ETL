@@ -1,5 +1,4 @@
 from pyspark.sql import SparkSession
-from transform.schema import COMPANY_SCHEMA, HISTORY_SCHEMA
 
 # spark = SparkSession.builder \
 #     .appName("TransformCompany") \
@@ -77,5 +76,6 @@ spark = SparkSession.builder \
     .config("spark.executor.memory", "2g") \
     .getOrCreate()
 
-df = spark.read.format("delta").load("s3a://silver/type=history/date=2025_08_02/")
+df = spark.read.format("delta").load("s3a://silver/type=profile/date=2025_08_02/")
 df.show()
+print(df.count())
