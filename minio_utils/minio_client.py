@@ -94,15 +94,15 @@ class MinioClient:
             return
 
         df = pd.DataFrame(rows_data, columns=schema)
-        buffer = io.BytesIO()
-        df.to_parquet(buffer, index=False)
-        buffer.seek(0)
-        self.client.put_object(
-            bucket_name,
-            object_name,
-            buffer,
-            length=buffer.getbuffer().nbytes,
-            content_type="application/octet-stream"
+        path = f"s3://{bucket_name}/{object_name}"
+        df.to_parquet(
+            path,
+            engine="pyarrow",
+            storage_options={
+                "key": "minioadmin",
+                "secret": "minioadmin123",
+                "endpoint_url": "http://localhost:9000"
+            }
         )
         print(f"Parquet file uploaded to bucket '{bucket_name}' as '{object_name}'.")
 

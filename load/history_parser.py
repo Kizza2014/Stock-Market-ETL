@@ -58,6 +58,9 @@ class HistoryParser(BaseParser):
             filename = html_file.split('/')[-1]
             ticker = filename.split('_')[0].upper()  # lấy ticker từ tên file
 
+            if ticker in ["BTI", "CFG"]:   # do 2 mã này tạm thời lỗi html, sau khi khắc phục sẽ bỏ dòng này
+                continue
+
             # kết quả được lưu cùng đường dẫn với file HTML
             save_path = os.path.join(files_path, f"{ticker}_history_parsed.parquet")
 
