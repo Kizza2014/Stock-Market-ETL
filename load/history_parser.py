@@ -15,6 +15,7 @@ class HistoryParser(BaseParser):
         super().__init__()
 
     def parse_html(self, html_content, minio_client, save_path):
+        ticker = save_path.split('/')[-1].split('_')[0].upper()  # Lấy ticker từ đường dẫn lưu
         soup = BeautifulSoup(html_content, 'html.parser')
         table = soup.find('table')
         rows_data = []
@@ -23,12 +24,15 @@ class HistoryParser(BaseParser):
 
             # Lấy schema từ hàng đầu tiên
             schema = [cell.get_text(strip=True) for cell in rows[0].find_all(['th'])]
+            schema.insert(0, "ticker")  # Thêm ticker vào schema
             schema = self.normalize_schema(schema)
 
             for row in rows[1:]:
                 cells = row.find_all(['td'])
                 cell_values = [cell.get_text(strip=True) for cell in cells]
-                if cell_values:
+                if cell_values and len(cell_values) > 2: # loại bỏ cả những ngày không giao dịch
+                    # thêm ticker vào bản ghi
+                    cell_values.insert(0, ticker)
                     rows_data.append(cell_values)
             print(f"Tổng số dòng: {len(rows_data) - 1}") # trừ đi header row
         
@@ -53,6 +57,7 @@ class HistoryParser(BaseParser):
         for html_file in html_files:
             filename = html_file.split('/')[-1]
             ticker = filename.split('_')[0].upper()  # lấy ticker từ tên file
+
             # kết quả được lưu cùng đường dẫn với file HTML
             save_path = os.path.join(files_path, f"{ticker}_history_parsed.parquet")
 
