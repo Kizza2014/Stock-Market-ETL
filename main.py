@@ -1,7 +1,7 @@
 from extract import (MostActiveQuoteCrawler, HistoryCrawler, ProfileCrawler, StatisticsCrawler,
                      IncomeStatementCrawler)
 from load import (MostActiveQuoteParser, HistoryParser, ProfileParser, StatisticsParser,
-                  IncomeStatementParser)
+                  IncomeStatementParser, BalanceSheetParser, CashFlowParser)
 from datetime import date
 from dotenv import load_dotenv
 
@@ -70,6 +70,18 @@ def parse_income_statement(parse_date):
     parser.parse_all_html(parse_date=parse_date)
     print("\nParsing completed.")
 
+def parse_balance_sheet(parse_date):
+    print("\n\n================== BALANCE SHEET PARSING ==================\n")
+    parser = BalanceSheetParser()
+    parser.parse_all_html(parse_date=parse_date)
+    print("\nParsing completed.")
+
+def parse_cash_flow(parse_date):
+    print("\n\n================== CASH FLOW PARSING ==================\n")
+    parser = CashFlowParser()
+    parser.parse_all_html(parse_date=parse_date)
+    print("\nParsing completed.")
+
 
 if __name__ == "__main__":
     load_dotenv()  # Load environment variables from .env file
@@ -105,8 +117,14 @@ if __name__ == "__main__":
     # #  crawl income statement
     # crawl_income_statement(tickers=most_active_tickers, crawl_date=crawl_date)
 
-    # parse income statment
-    parse_income_statement(parse_date=crawl_date)
+    # # parse income statment
+    # parse_income_statement(parse_date=crawl_date)
+
+    # # parse balance sheet
+    # parse_balance_sheet(parse_date=crawl_date)
+
+    # # parse cash flow
+    # parse_cash_flow(parse_date=crawl_date)
 
     # transform profile
     

@@ -76,6 +76,6 @@ spark = SparkSession.builder \
     .config("spark.executor.memory", "2g") \
     .getOrCreate()
 
-df = spark.read.format("delta").load("s3a://silver/type=profile/date=2025_08_02/")
+df = spark.read.format("delta").load("s3a://silver/type=balance_sheet/date=2025_08_02/")
 df.show()
 print(df.count())
