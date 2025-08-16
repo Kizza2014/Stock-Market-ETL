@@ -5,7 +5,10 @@ class BaseParser:
         self.parsing_results = {
             "data_type": None,
             "total_tickers": 0,
-            "parse_date": None
+            "parse_date": None,
+            "tickers": {},
+            "total_succeeded": 0,
+            "total_failed": 0
         }
 
     def parse_html(self, html):

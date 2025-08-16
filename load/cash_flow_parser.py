@@ -7,13 +7,13 @@ from .base_parser import BaseParser
 
 LANDING_BUCKET = os.getenv("LANDING_BUCKET", "landing")
 BRONZE_BUCKET = os.getenv("BRONZE_BUCKET", "bronze")
-ROOT_SAVE_PATH = os.getenv("INCOME_STATEMENT_ROOT_PATH", "type=income_statement")
+ROOT_SAVE_PATH = os.getenv("CASH_FLOW_ROOT_PATH", "type=cash_flow")
 
 
-class IncomeStatementParser(BaseParser):
+class CashFlowParser(BaseParser):
     def __init__(self):
         super().__init__()
-        self.parsing_results["data_type"] = "income_statement"
+        self.parsing_results["data_type"] = "cash_flow"
 
     def parse_all_html(self, parse_date):
         # tạo minio client
@@ -77,7 +77,7 @@ class IncomeStatementParser(BaseParser):
                 print(f"Tổng số dòng: {len(transposed_data)}")
                 
                 # lưu parquet lên minio
-                save_path = os.path.join(files_path, f"{ticker}_income_statement_parsed.parquet")
+                save_path = os.path.join(files_path, f"{ticker}_cash_flow_parsed.parquet")
                 minio_client.upload_to_minio_as_parquet(transposed_data, schema, save_path, BRONZE_BUCKET)
 
                 # ghi log

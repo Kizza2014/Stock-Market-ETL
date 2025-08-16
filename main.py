@@ -99,11 +99,14 @@ if __name__ == "__main__":
     # # crawl statistics
     # crawl_statistics(most_active_tickers, crawl_date=crawl_date)
 
-    # parse statistics
-    parse_statistics(parse_date=crawl_date)
+    # # parse statistics
+    # parse_statistics(parse_date=crawl_date)
 
     # #  crawl income statement
     # crawl_income_statement(tickers=most_active_tickers, crawl_date=crawl_date)
+
+    # parse income statment
+    parse_income_statement(parse_date=crawl_date)
 
     # transform profile
     
