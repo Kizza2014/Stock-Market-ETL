@@ -1,0 +1,46 @@
+<configuration>
+    <!-- Hive Metastore Configuration -->
+    <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:mysql://localhost:3306/hive_metastore?createDatabaseIfNotExist=true</value>
+    </property>
+
+    <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>com.mysql.cj.jdbc.Driver</value>
+    </property>
+
+    <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>hive</value>
+    </property>
+
+    <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>hive_password</value>
+    </property>
+
+    <property>
+    <name>datanucleus.autoCreateSchema</name>
+    <value>true</value>
+    </property>
+
+    <!-- Configuration to MinIO -->
+
+    <property>
+    <name>fs.s3a.endpoint</name>
+    <value>http://localhost:9000</value>
+    </property>
+    <property>
+    <name>fs.s3a.access.key</name>
+    <value>minioadmin</value>
+    </property>
+    <property>
+    <name>fs.s3a.secret.key</name>
+    <value>minioadmin123</value>
+    </property>
+    <property>
+    <name>fs.s3a.path.style.access</name>
+    <value>true</value>
+    </property>
+</configuration>
