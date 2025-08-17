@@ -1,6 +1,5 @@
 from delta import configure_spark_with_delta_pip
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, year, month, dayofmonth, quarter, dayofweek, explode
 
 
 builder = (
@@ -20,4 +19,4 @@ builder = (
 
 spark = configure_spark_with_delta_pip(builder).getOrCreate()
 
-spark.sql("SELECT * FROM fact_price fp JOIN dim_company dc ON fp.symbol=dc.company_ticker").show(truncate=False)
+spark.sql("SELECT fp.symbol, dc.company_name, fp.date, fp.open, fp.high, fp.low, fp.close FROM fact_price fp JOIN dim_company dc ON fp.symbol=dc.company_ticker").show(truncate=False)
