@@ -1,5 +1,4 @@
-from base_transformer import BaseTransformer
-import os
+from .base_transformer import BaseTransformer
 
 class CompanyTransformer(BaseTransformer):
     def __init__(self):

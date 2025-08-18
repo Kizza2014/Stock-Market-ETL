@@ -2,6 +2,8 @@ from extract import (MostActiveQuoteCrawler, HistoryCrawler, ProfileCrawler, Sta
                      IncomeStatementCrawler)
 from load import (MostActiveQuoteParser, HistoryParser, ProfileParser, StatisticsParser,
                   IncomeStatementParser, BalanceSheetParser, CashFlowParser)
+from transform import (CompanyTransformer, BalanceSheetTransformer, CashFlowTransformer, HistoryTransformer,
+                       StatisticsTransformer, IncomeStatementTransformer)
 from datetime import date
 from dotenv import load_dotenv
 
@@ -82,6 +84,42 @@ def parse_cash_flow(parse_date):
     parser.parse_all_html(parse_date=parse_date)
     print("\nParsing completed.")
 
+def transform_profile(transform_date):
+    print("\n\n================== PROFILE TRANSFORMATION ==================\n")
+    transformer = CompanyTransformer()
+    transformer.process(f"type=profile/date={transform_date}/")
+    print("\nTransformation completed.")
+
+def transform_history(transform_date):
+    print("\n\n================== HISTORY TRANSFORMATION ==================\n")
+    transformer = HistoryTransformer()
+    transformer.process(f"type=history/date={transform_date}/")
+    print("\nTransformation completed.")
+
+def transform_income_statement(transform_date):
+    print("\n\n================== INCOME STATEMENT TRANSFORMATION ==================\n")
+    transformer = IncomeStatementTransformer()
+    transformer.process(f"type=income_statement/date={transform_date}/")
+    print("\nTransformation completed.")
+
+def transform_balance_sheet(transform_date):
+    print("\n\n================== BALANCE SHEET TRANSFORMATION ==================\n")
+    transformer = BalanceSheetTransformer()
+    transformer.process(f"type=balance_sheet/date={transform_date}/")
+    print("\nTransformation completed.")
+
+def transform_cash_flow(transform_date):
+    print("\n\n================== CASH FLOW TRANSFORMATION ==================\n")
+    transformer = CashFlowTransformer()
+    transformer.process(f"type=cash_flow/date={transform_date}/")
+    print("\nTransformation completed.")
+
+def transform_statistics(transform_date):
+    print("\n\n================== STATISTICS TRANSFORMATION ==================\n")
+    transformer = StatisticsTransformer()
+    transformer.process(f"type=statistics/date={transform_date}/")
+    print("\nTransformation completed.")
+
 
 if __name__ == "__main__":
     load_dotenv()  # Load environment variables from .env file
@@ -127,4 +165,19 @@ if __name__ == "__main__":
     # parse_cash_flow(parse_date=crawl_date)
 
     # transform profile
-    
+    transform_profile(transform_date=crawl_date)
+
+    # transform history
+    transform_history(transform_date=crawl_date)
+
+    # transform income statement
+    transform_income_statement(transform_date=crawl_date)
+
+    # transform balance sheet
+    transform_balance_sheet(transform_date=crawl_date)
+
+    # transform cash flow
+    transform_cash_flow(transform_date=crawl_date)
+
+    # transform statistics
+    transform_statistics(transform_date=crawl_date)

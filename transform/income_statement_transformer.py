@@ -1,4 +1,4 @@
-from base_transformer import BaseTransformer
+from .base_transformer import BaseTransformer
 from pyspark.sql.functions import col, to_date, trim, regexp_replace
 from pyspark.sql.types import DoubleType
 
