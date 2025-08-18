@@ -3,6 +3,7 @@
 ```plaintext
 Stock-Market-ETL/
 ├── main.py
+├── demo.py : demo query ui
 ├── README.md
 ├── extract/
 │   ├── crawl data from web
@@ -15,6 +16,8 @@ Stock-Market-ETL/
 │   ├── transform and upload to MinIO as delta format
 ├── hive_metastore
 |   ├── hive configuration and registering for delta table
+├── trino_config
+|   ├── configuration for query engine
 ```
 - Change logs: https://docs.google.com/spreadsheets/d/1OtZ5dOQT_BJD4e0hYIlsiwHSkiLpegukf0JIdGKC7_w/edit?usp=sharing
 
