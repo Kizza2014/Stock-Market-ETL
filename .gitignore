@@ -22,3 +22,5 @@ minio_utils/__pycache__/*
 extract/__pycache__/*
 load/__pycache__/*
 transform/__pycache__/*
+trino
+trino-server-430.tar.gz
